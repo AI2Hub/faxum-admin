@@ -1,19 +1,20 @@
 use std::{env};
 
-use axum::{middleware, Router, routing::{get, post}};
+use axum::{middleware as md, Router, routing::{get, post}};
 use diesel::MysqlConnection;
 use diesel::r2d2::{self, ConnectionManager};
 use dotenvy::dotenv;
 use once_cell::sync::Lazy;
 
 use crate::handler::{menu_handler, role_handler, user_handler};
-use crate::utils::auth::auth;
+use crate::middleware::auth::auth;
 
 pub mod model;
 pub mod vo;
 pub mod handler;
 pub mod utils;
 pub mod schema;
+pub mod middleware;
 
 type DbPool = r2d2::Pool<ConnectionManager<MysqlConnection>>;
 
@@ -50,7 +51,7 @@ async fn main() {
             .route("/menu_save", post(menu_handler::add_menu))
             .route("/menu_delete", post(menu_handler::delete_menu))
             .route("/menu_update", post(menu_handler::update_menu))
-            .route_layer(middleware::from_fn(auth)));
+            .route_layer(md::from_fn(auth)));
 
 
     // axum 0.6.x
