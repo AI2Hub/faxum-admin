@@ -18,7 +18,7 @@ pub struct SysRole {
 #[derive(Insertable, Debug, PartialEq, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::sys_role)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
-pub struct SysRoleAdd {
+pub struct AddSysRole {
     pub role_name: String,
     pub status_id: i8,
     pub sort: i32,
@@ -28,7 +28,7 @@ pub struct SysRoleAdd {
 #[derive(Debug, PartialEq, Serialize, Deserialize, AsChangeset)]
 #[diesel(table_name = crate::schema::sys_role)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
-pub struct SysRoleUpdate {
+pub struct UpdateSysRole {
     pub id: i64,
     pub role_name: String,
     pub status_id: i8,

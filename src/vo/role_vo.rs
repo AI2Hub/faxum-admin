@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]
-pub struct RoleListReq {
+pub struct QueryRoleListReq {
     #[serde(rename = "current")]
     pub page_no: u64,
     #[serde(rename = "pageSize")]
@@ -11,7 +11,7 @@ pub struct RoleListReq {
 }
 
 #[derive(Debug, Serialize)]
-pub struct RoleListData {
+pub struct QueryRoleListData {
     pub id: i64,
     pub sort: i32,
     pub status_id: i8,
@@ -22,7 +22,7 @@ pub struct RoleListData {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct RoleSaveReq {
+pub struct AddRoleReq {
     pub role_name: String,
     pub sort: i32,
     pub status_id: i8,
@@ -30,7 +30,7 @@ pub struct RoleSaveReq {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct RoleUpdateReq {
+pub struct UpdateRoleReq {
     pub id: i64,
     pub sort: i32,
     pub status_id: i8,
@@ -40,7 +40,7 @@ pub struct RoleUpdateReq {
 
 
 #[derive(Debug, Deserialize)]
-pub struct RoleDeleteReq {
+pub struct DeleteRoleReq {
     pub ids: Vec<i64>,
 }
 

@@ -18,7 +18,7 @@ pub struct SysRoleMenu {
 #[derive(Insertable, Debug, PartialEq, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::sys_role_menu)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
-pub struct SysRoleMenuAdd {
+pub struct AddSysRoleMenu {
     pub role_id: i64,
     pub menu_id: i64,
     pub status_id: i8,

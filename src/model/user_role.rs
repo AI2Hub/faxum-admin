@@ -19,7 +19,7 @@ pub struct SysUserRole {
 #[derive(Insertable, Debug, PartialEq, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::sys_user_role)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
-pub struct SysUserRoleAdd {
+pub struct AddSysUserRole {
     pub user_id: i64,
     pub role_id: i64,
     pub status_id: i8,

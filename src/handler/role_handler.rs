@@ -6,8 +6,8 @@ use log::{debug, error};
 
 use crate::{RB, schema};
 use crate::model::menu::SysMenu;
-use crate::model::role::{SysRole, SysRoleAdd, SysRoleUpdate};
-use crate::model::role_menu::SysRoleMenuAdd;
+use crate::model::role::{SysRole, AddSysRole, UpdateSysRole};
+use crate::model::role_menu::AddSysRoleMenu;
 use crate::schema::sys_menu::dsl::sys_menu;
 use crate::schema::sys_role::{id, role_name, status_id};
 use crate::schema::sys_role::dsl::sys_role;
@@ -17,14 +17,85 @@ use crate::schema::sys_user_role::dsl::sys_user_role;
 use crate::vo::{err_result_msg, handle_result, ok_result_data, ok_result_page};
 use crate::vo::role_vo::*;
 
+// 添加角色信息
+pub async fn add_role(Json(req): Json<AddRoleReq>) -> impl IntoResponse {
+    log::info!("add_role params: {:?}", &req);
+    let add_sys_role = AddSysRole {
+        status_id: req.status_id,
+        sort: req.sort,
+        role_name: req.role_name,
+        remark: req.remark.unwrap(),
+    };
+
+    match &mut RB.clone().get() {
+        Ok(conn) => {
+            Json(handle_result(diesel::insert_into(sys_role::table()).values(add_sys_role).execute(conn)))
+        }
+        Err(err) => {
+            error!("err:{}", err.to_string());
+            Json(err_result_msg(err.to_string()))
+        }
+    }
+}
+
+// 删除角色信息
+pub async fn delete_role(Json(req): Json<DeleteRoleReq>) -> impl IntoResponse {
+    log::info!("delete_role params: {:?}", &req);
+    match &mut RB.clone().get() {
+        Ok(conn) => {
+            let ids = req.ids.clone();
+            //查询角色有没有被使用了,如果使用了就不能删除
+            match sys_user_role.filter(schema::sys_user_role::role_id.eq_any(ids)).count().get_result::<i64>(conn) {
+                Ok(count) => {
+                    if count != 0 {
+                        error!("err:{}", "角色已被使用,不能删除".to_string());
+                        return Json(err_result_msg("角色已被使用,不能删除".to_string()));
+                    }
+                    Json(handle_result(diesel::delete(sys_role.filter(id.eq_any(&req.ids))).execute(conn)))
+                }
+                Err(err) => {
+                    error!("err:{}", err.to_string());
+                    Json(err_result_msg(err.to_string()))
+                }
+            }
+        }
+        Err(err) => {
+            error!("err:{}", err.to_string());
+            Json(err_result_msg(err.to_string()))
+        }
+    }
+}
+
+// 更新角色信息
+pub async fn update_role(Json(req): Json<UpdateRoleReq>) -> impl IntoResponse {
+    log::info!("update_role params: {:?}", &req);
+    let update_sys_role = UpdateSysRole {
+        id: req.id,
+        status_id: req.status_id,
+        sort: req.sort,
+        role_name: req.role_name,
+        remark: req.remark.unwrap_or_default(),
+    };
+
+    match &mut RB.clone().get() {
+        Ok(conn) => {
+            Json(handle_result(diesel::update(sys_role).filter(id.eq(&req.id)).set(update_sys_role).execute(conn)))
+        }
+        Err(err) => {
+            error!("err:{}", err.to_string());
+            Json(err_result_msg(err.to_string()))
+        }
+    }
+}
+
 // 查询角色列表
-pub async fn role_list(Json(item): Json<RoleListReq>) -> Result<impl IntoResponse, impl IntoResponse> {
-    log::info!("role_list params: {:?}", &item);
+pub async fn query_role_list(Json(req): Json<QueryRoleListReq>) -> Result<impl IntoResponse, impl IntoResponse> {
+    log::info!("query_role_list params: {:?}", &req);
     let mut query = sys_role::table().into_boxed();
-    if let Some(i) = &item.role_name {
+    if let Some(i) = &req.role_name {
         query = query.filter(role_name.eq(i));
     }
-    if let Some(i) = &item.status_id {
+    if let Some(i) = &req.status_id {
         query = query.filter(status_id.eq(i));
     }
 
@@ -33,10 +104,10 @@ pub async fn role_list(Json(item): Json<RoleListReq>) -> Result<impl IntoRespons
     match &mut RB.clone().get() {
         Ok(conn) => {
             let result = query.load::<SysRole>(conn);
-            let mut list: Vec<RoleListData> = Vec::new();
+            let mut list: Vec<QueryRoleListData> = Vec::new();
             if let Ok(role_list) = result {
                 for role in role_list {
-                    list.push(RoleListData {
+                    list.push(QueryRoleListData {
                         id: role.id,
                         sort: role.sort,
                         status_id: role.status_id,
@@ -57,80 +128,9 @@ pub async fn role_list(Json(item): Json<RoleListReq>) -> Result<impl IntoRespons
     }
 }
 
-// 添加角色信息
-pub async fn role_save(Json(role): Json<RoleSaveReq>) -> impl IntoResponse {
-    log::info!("role_save params: {:?}", &role);
-    let role_add = SysRoleAdd {
-        status_id: role.status_id,
-        sort: role.sort,
-        role_name: role.role_name,
-        remark: role.remark.unwrap(),
-    };
-
-    match &mut RB.clone().get() {
-        Ok(conn) => {
-            Json(handle_result(diesel::insert_into(sys_role::table()).values(role_add).execute(conn)))
-        }
-        Err(err) => {
-            error!("err:{}", err.to_string());
-            Json(err_result_msg(err.to_string()))
-        }
-    }
-}
-
-// 更新角色信息
-pub async fn role_update(Json(role): Json<RoleUpdateReq>) -> impl IntoResponse {
-    log::info!("role_update params: {:?}", &role);
-    let s_role = SysRoleUpdate {
-        id: role.id,
-        status_id: role.status_id,
-        sort: role.sort,
-        role_name: role.role_name,
-        remark: role.remark.unwrap_or_default(),
-    };
-
-    match &mut RB.clone().get() {
-        Ok(conn) => {
-            Json(handle_result(diesel::update(sys_role).filter(id.eq(&role.id)).set(s_role).execute(conn)))
-        }
-        Err(err) => {
-            error!("err:{}", err.to_string());
-            Json(err_result_msg(err.to_string()))
-        }
-    }
-}
-
-// 删除角色信息
-pub async fn role_delete(Json(item): Json<RoleDeleteReq>) -> impl IntoResponse {
-    log::info!("role_delete params: {:?}", &item);
-    match &mut RB.clone().get() {
-        Ok(conn) => {
-            let ids = item.ids.clone();
-            //查询角色有没有被使用了,如果使用了就不能删除
-            match sys_user_role.filter(schema::sys_user_role::role_id.eq_any(ids)).count().get_result::<i64>(conn) {
-                Ok(count) => {
-                    if count != 0 {
-                        error!("err:{}", "角色已被使用,不能删除".to_string());
-                        return Json(err_result_msg("角色已被使用,不能删除".to_string()));
-                    }
-                    Json(handle_result(diesel::delete(sys_role.filter(id.eq_any(&item.ids))).execute(conn)))
-                }
-                Err(err) => {
-                    error!("err:{}", err.to_string());
-                    Json(err_result_msg(err.to_string()))
-                }
-            }
-        }
-        Err(err) => {
-            error!("err:{}", err.to_string());
-            Json(err_result_msg(err.to_string()))
-        }
-    }
-}
-
 // 查询角色关联的菜单
-pub async fn query_role_menu(Json(item): Json<QueryRoleMenuReq>) -> Result<impl IntoResponse, impl IntoResponse> {
-    log::info!("query_role_menu params: {:?}", &item);
+pub async fn query_role_menu(Json(req): Json<QueryRoleMenuReq>) -> Result<impl IntoResponse, impl IntoResponse> {
+    log::info!("query_role_menu params: {:?}", &req);
     match &mut RB.clone().get() {
         Ok(conn) => {
             let mut menu_data_list: Vec<MenuDataList> = Vec::new();
@@ -157,10 +157,10 @@ pub async fn query_role_menu(Json(item): Json<QueryRoleMenuReq>) -> Result<impl 
             }
 
             //不是超级管理员的时候,就要查询角色和菜单的关联
-            if item.role_id != 1 {
+            if req.role_id != 1 {
                 role_menu_ids.clear();
 
-                match sys_role_menu.filter(role_id.eq(item.role_id.clone())).select(menu_id).load::<i64>(conn) {
+                match sys_role_menu.filter(role_id.eq(req.role_id.clone())).select(menu_id).load::<i64>(conn) {
                     Ok(menu_ids) => {
                         role_menu_ids = menu_ids
                     }
@@ -184,20 +184,20 @@ pub async fn query_role_menu(Json(item): Json<QueryRoleMenuReq>) -> Result<impl 
 }
 
 // 更新角色关联的菜单
-pub async fn update_role_menu(Json(item): Json<UpdateRoleMenuReq>) -> impl IntoResponse {
-    log::info!("update_role_menu params: {:?}", &item);
+pub async fn update_role_menu(Json(req): Json<UpdateRoleMenuReq>) -> impl IntoResponse {
+    log::info!("update_role_menu params: {:?}", &req);
 
-    let r_id = item.role_id.clone();
-    let menu_ids = item.menu_ids.clone();
+    let r_id = req.role_id.clone();
+    let menu_ids = req.menu_ids.clone();
 
     match &mut RB.clone().get() {
         Ok(conn) => {
             match diesel::delete(sys_role_menu.filter(role_id.eq(r_id))).execute(conn) {
                 Ok(_) => {
-                    let mut role_menu: Vec<SysRoleMenuAdd> = Vec::new();
+                    let mut role_menu: Vec<AddSysRoleMenu> = Vec::new();
 
                     for m_id in menu_ids {
-                        role_menu.push(SysRoleMenuAdd {
+                        role_menu.push(AddSysRoleMenu {
                             status_id: 1,
                             sort: 1,
                             menu_id: m_id.clone(),
@@ -205,7 +205,7 @@ pub async fn update_role_menu(Json(item): Json<UpdateRoleMenuReq>) -> impl IntoR
                         })
                     }
 
-                    Json(handle_result(diesel::insert_into(sys_role_menu::table()).values(role_menu).execute(conn)))
+                    Json(handle_result(diesel::insert_into(sys_role_menu::table()).values(&role_menu).execute(conn)))
                 }
                 Err(err) => {
                     error!("err:{}", err.to_string());

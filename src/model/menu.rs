@@ -24,7 +24,7 @@ pub struct SysMenu {
 #[derive(Insertable, Debug, PartialEq, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::sys_menu)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
-pub struct SysMenuAdd {
+pub struct AddSysMenu {
     pub menu_name: String,
     pub menu_type: i8,
     pub status_id: i8,
@@ -40,7 +40,7 @@ pub struct SysMenuAdd {
 #[derive(Debug, PartialEq, Serialize, Deserialize, AsChangeset)]
 #[diesel(table_name = crate::schema::sys_menu)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
-pub struct SysMenuUpdate {
+pub struct UpdateSysMenu {
     pub id: i64,
     pub menu_name: String,
     pub menu_type: i8,
@@ -56,6 +56,6 @@ pub struct SysMenuUpdate {
 
 #[derive(QueryableByName)]
 pub struct StringColumn {
-    #[sql_type = "diesel::sql_types::Varchar"]
+    #[diesel(sql_type = diesel::sql_types::Varchar)]
     pub api_url: String,
 }

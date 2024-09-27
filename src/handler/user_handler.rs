@@ -10,8 +10,8 @@ use log::{debug, error, info, warn};
 use crate::{RB, schema};
 use crate::model::menu::{StringColumn, SysMenu};
 use crate::model::role::SysRole;
-use crate::model::user::{SysUser, SysUserAdd, SysUserUpdate};
-use crate::model::user_role::{SysUserRole, SysUserRoleAdd};
+use crate::model::user::{SysUser, AddSysUser, UpdateSysUser};
+use crate::model::user_role::{SysUserRole, AddSysUserRole};
 use crate::schema::sys_menu::{api_url, sort};
 use crate::schema::sys_menu::dsl::sys_menu;
 use crate::schema::sys_role::dsl::sys_role;
@@ -24,18 +24,142 @@ use crate::utils::jwt_util::JWTToken;
 use crate::vo::{err_result_msg, handle_result, ok_result, ok_result_data, ok_result_page};
 use crate::vo::user_vo::*;
 
-// 后台用户登录
-pub async fn login(Json(item): Json<UserLoginReq>) -> impl IntoResponse {
-    info!("user login params: {:?}", &item);
+// 添加用户信息
+pub async fn add_user(Json(req): Json<UserSaveReq>) -> impl IntoResponse {
+    info!("add_user params: {:?}", &req);
+
+    let add_sys_user = AddSysUser {
+        status_id: req.status_id,
+        sort: req.sort,
+        mobile: req.mobile,
+        user_name: req.user_name,
+        remark: req.remark,
+        password: "123456".to_string(),//默认密码为123456,暂时不加密
+    };
+
+    Json(SysUser::add_user(add_sys_user))
+}
+
+// 删除用户信息
+pub async fn delete_user(Json(req): Json<UserDeleteReq>) -> impl IntoResponse {
+    info!("delete_user params: {:?}", &req);
+
     match &mut RB.clone().get() {
         Ok(conn) => {
-            let query = sys_user.filter(mobile.eq(&item.mobile));
+            let ids = req.ids.clone();
+            //id为1的用户为系统预留用户,不能删除
+            let mut delete_ids = vec![];
+            for delete_id in ids {
+                if delete_id == 1 {
+                    warn!("err:{}", "不能删除超级管理员".to_string());
+                    continue;
+                }
+                delete_ids.push(delete_id)
+            }
+
+            if delete_ids.len() == 0 {
+                return Json(ok_result());
+            }
+
+            let query = diesel::delete(sys_user.filter(id.eq_any(delete_ids)));
+            debug!("SQL: {}", diesel::debug_query::<diesel::mysql::Mysql, _>(&query).to_string());
+            Json(handle_result(query.execute(conn)))
+        }
+        Err(err) => {
+            error!("err:{}", err.to_string());
+            Json(err_result_msg(err.to_string()))
+        }
+    }
+}
+
+// 更新用户信息
+pub async fn update_user(Json(req): Json<UserUpdateReq>) -> impl IntoResponse {
+    info!("update_user params: {:?}", &req);
+
+    match &mut RB.clone().get() {
+        Ok(conn) => {
+            let user_sql = sql_query("SELECT * FROM sys_user where id = ? ");
+
+            match user_sql.bind::<Bigint, _>(req.id).get_result::<SysUser>(conn) {
+                Ok(s_user) => {
+                    let update_sys_user = UpdateSysUser {
+                        id: req.id.clone(),
+                        status_id: req.status_id,
+                        sort: req.sort,
+                        mobile: req.mobile,
+                        user_name: req.user_name,
+                        remark: req.remark,
+                        password: s_user.password.clone(),
+                    };
+
+                    let query = diesel::update(sys_user.filter(id.eq(req.id.clone()))).set(update_sys_user);
+                    debug!("SQL:{}", diesel::debug_query::<diesel::mysql::Mysql, _>(&query).to_string());
+                    Json(handle_result(query.execute(conn)))
+                }
+                Err(err) => {
+                    error!("err:{}", err.to_string());
+                    Json(err_result_msg(err.to_string()))
+                }
+            }
+        }
+        Err(err) => {
+            error!("err:{}", err.to_string());
+            Json(err_result_msg(err.to_string()))
+        }
+    }
+}
+
+// 查询用户列表
+pub async fn query_user_list(Json(req): Json<UserListReq>) -> Result<impl IntoResponse, impl IntoResponse> {
+    info!("query_user_list params: {:?}", &req);
+    let mut query = sys_user::table().into_boxed();
+    if let Some(i) = &req.status_id {
+        query = query.filter(status_id.eq(i));
+    }
+    if let Some(i) = &req.mobile {
+        query = query.filter(mobile.eq(i));
+    }
+
+    debug!("SQL:{}", diesel::debug_query::<diesel::mysql::Mysql, _>(&query).to_string());
+
+    match &mut RB.clone().get() {
+        Ok(conn) => {
+            let mut list_data: Vec<UserListData> = Vec::new();
+            if let Ok(sys_user_list) = query.load::<SysUser>(conn) {
+                for user in sys_user_list {
+                    list_data.push(UserListData {
+                        id: user.id,
+                        sort: user.sort,
+                        status_id: user.status_id,
+                        mobile: user.mobile,
+                        user_name: user.user_name,
+                        remark: user.remark.unwrap_or_default(),
+                        create_time: user.create_time.to_string(),
+                        update_time: user.update_time.to_string(),
+                    })
+                }
+            }
+            Ok(Json(ok_result_page(list_data, 10)))
+        }
+        Err(err) => {
+            error!("err:{}", err.to_string());
+            Err(Json(err_result_msg(err.to_string())))
+        }
+    }
+}
+
+// 后台用户登录
+pub async fn login(Json(req): Json<UserLoginReq>) -> impl IntoResponse {
+    info!("user login params: {:?}", &req);
+    match &mut RB.clone().get() {
+        Ok(conn) => {
+            let query = sys_user.filter(mobile.eq(&req.mobile));
             debug!("SQL: {}", diesel::debug_query::<diesel::mysql::Mysql, _>(&query).to_string());
 
             if let Ok(user) = query.first::<SysUser>(conn) {
                 info!("select_by_mobile: {:?}", user);
 
-                if user.password.ne(&item.password) {
+                if user.password.ne(&req.password) {
                     return Json(err_result_msg("密码不正确".to_string()));
                 }
 
@@ -120,13 +244,13 @@ fn query_btn_menu(u_id: i64) -> Vec<String> {
     }
 }
 
-pub async fn query_user_role(Json(item): Json<QueryUserRoleReq>) -> Result<impl IntoResponse, impl IntoResponse> {
-    info!("query_user_role params: {:?}", item);
+pub async fn query_user_role(Json(req): Json<QueryUserRoleReq>) -> Result<impl IntoResponse, impl IntoResponse> {
+    info!("query_user_role params: {:?}", req);
     match &mut RB.clone().get() {
         Ok(conn) => {
             let mut user_role_ids: Vec<i64> = Vec::new();
 
-            if let Ok(ids) = sys_user_role.filter(user_id.eq(&item.user_id)).select(role_id).load::<i64>(conn) {
+            if let Ok(ids) = sys_user_role.filter(user_id.eq(&req.user_id)).select(role_id).load::<i64>(conn) {
                 user_role_ids = ids
             }
 
@@ -159,10 +283,10 @@ pub async fn query_user_role(Json(item): Json<QueryUserRoleReq>) -> Result<impl 
     }
 }
 
-pub async fn update_user_role(Json(item): Json<UpdateUserRoleReq>) -> impl IntoResponse {
-    info!("update_user_role params: {:?}", item);
-    let u_id = item.user_id;
-    let role_ids = item.role_ids;
+pub async fn update_user_role(Json(req): Json<UpdateUserRoleReq>) -> impl IntoResponse {
+    info!("update_user_role params: {:?}", req);
+    let u_id = req.user_id;
+    let role_ids = req.role_ids;
 
     if u_id == 1 {
         return Json(err_result_msg("不能修改超级管理员的角色".to_string()));
@@ -172,9 +296,9 @@ pub async fn update_user_role(Json(item): Json<UpdateUserRoleReq>) -> impl IntoR
         Ok(conn) => {
             match diesel::delete(sys_user_role.filter(user_id.eq(u_id))).execute(conn) {
                 Ok(_) => {
-                    let mut sys_role_user_list: Vec<SysUserRoleAdd> = Vec::new();
+                    let mut sys_role_user_list: Vec<AddSysUserRole> = Vec::new();
                     for r_id in role_ids {
-                        sys_role_user_list.push(SysUserRoleAdd {
+                        sys_role_user_list.push(AddSysUserRole {
                             status_id: 1,
                             sort: 1,
                             role_id: r_id,
@@ -318,130 +442,8 @@ pub async fn query_user_menu(headers: HeaderMap) -> Result<impl IntoResponse, im
     };
 }
 
-// 查询用户列表
-pub async fn user_list(Json(item): Json<UserListReq>) -> Result<impl IntoResponse, impl IntoResponse> {
-    info!("query user_list params: {:?}", &item);
-    let mut query = sys_user::table().into_boxed();
-    if let Some(i) = &item.status_id {
-        query = query.filter(status_id.eq(i));
-    }
-    if let Some(i) = &item.mobile {
-        query = query.filter(mobile.eq(i));
-    }
 
-    debug!("SQL:{}", diesel::debug_query::<diesel::mysql::Mysql, _>(&query).to_string());
 
-    match &mut RB.clone().get() {
-        Ok(conn) => {
-            let mut list_data: Vec<UserListData> = Vec::new();
-            if let Ok(sys_user_list) = query.load::<SysUser>(conn) {
-                for user in sys_user_list {
-                    list_data.push(UserListData {
-                        id: user.id,
-                        sort: user.sort,
-                        status_id: user.status_id,
-                        mobile: user.mobile,
-                        user_name: user.user_name,
-                        remark: user.remark.unwrap_or_default(),
-                        create_time: user.create_time.to_string(),
-                        update_time: user.update_time.to_string(),
-                    })
-                }
-            }
-            Ok(Json(ok_result_page(list_data, 10)))
-        }
-        Err(err) => {
-            error!("err:{}", err.to_string());
-            Err(Json(err_result_msg(err.to_string())))
-        }
-    }
-}
-
-// 添加用户信息
-pub async fn user_save(Json(user): Json<UserSaveReq>) -> impl IntoResponse {
-    info!("user_save params: {:?}", &user);
-
-    let s_user = SysUserAdd {
-        status_id: user.status_id,
-        sort: user.sort,
-        mobile: user.mobile,
-        user_name: user.user_name,
-        remark: user.remark,
-        password: "123456".to_string(),//默认密码为123456,暂时不加密
-    };
-
-    Json(SysUser::add_user(s_user))
-}
-
-// 更新用户信息
-pub async fn user_update(Json(user): Json<UserUpdateReq>) -> impl IntoResponse {
-    info!("user_update params: {:?}", &user);
-
-    match &mut RB.clone().get() {
-        Ok(conn) => {
-            let user_sql = sql_query("SELECT * FROM sys_user where id = ? ");
-
-            match user_sql.bind::<Bigint, _>(user.id).get_result::<SysUser>(conn) {
-                Ok(s_user) => {
-                    let s_user = SysUserUpdate {
-                        id: user.id.clone(),
-                        status_id: user.status_id,
-                        sort: user.sort,
-                        mobile: user.mobile,
-                        user_name: user.user_name,
-                        remark: user.remark,
-                        password: s_user.password.clone(),
-                    };
-
-                    let query = diesel::update(sys_user.filter(id.eq(user.id.clone()))).set(s_user);
-                    debug!("SQL:{}", diesel::debug_query::<diesel::mysql::Mysql, _>(&query).to_string());
-                    Json(handle_result(query.execute(conn)))
-                }
-                Err(err) => {
-                    error!("err:{}", err.to_string());
-                    Json(err_result_msg(err.to_string()))
-                }
-            }
-        }
-        Err(err) => {
-            error!("err:{}", err.to_string());
-            Json(err_result_msg(err.to_string()))
-        }
-    }
-}
-
-// 删除用户信息
-pub async fn user_delete(Json(item): Json<UserDeleteReq>) -> impl IntoResponse {
-    info!("user_delete params: {:?}", &item);
-    info!("user_delete params: {:?}", &item);
-
-    match &mut RB.clone().get() {
-        Ok(conn) => {
-            let ids = item.ids.clone();
-            //id为1的用户为系统预留用户,不能删除
-            let mut delete_ids = vec![];
-            for delete_id in ids {
-                if delete_id == 1 {
-                    warn!("err:{}", "不能删除超级管理员".to_string());
-                    continue;
-                }
-                delete_ids.push(delete_id)
-            }
-
-            if delete_ids.len() == 0 {
-                return Json(ok_result());
-            }
-
-            let query = diesel::delete(sys_user.filter(id.eq_any(delete_ids)));
-            debug!("SQL: {}", diesel::debug_query::<diesel::mysql::Mysql, _>(&query).to_string());
-            Json(handle_result(query.execute(conn)))
-        }
-        Err(err) => {
-            error!("err:{}", err.to_string());
-            Json(err_result_msg(err.to_string()))
-        }
-    }
-}
 
 // 更新用户密码
 pub async fn update_user_password(Json(item): Json<UpdateUserPwdReq>) -> impl IntoResponse {

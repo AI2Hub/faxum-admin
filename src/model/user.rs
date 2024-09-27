@@ -11,7 +11,7 @@ use crate::vo::{BaseResponse, err_result_msg, handle_result};
 #[derive(Insertable, Debug, PartialEq, Serialize, Deserialize, AsChangeset)]
 #[diesel(table_name = crate::schema::sys_user)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
-pub struct SysUserAdd {
+pub struct AddSysUser {
     pub mobile: String,
     pub user_name: String,
     pub password: String,
@@ -25,7 +25,7 @@ pub struct SysUserAdd {
 #[derive(Debug, PartialEq, Serialize, Deserialize, AsChangeset)]
 #[diesel(table_name = crate::schema::sys_user)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
-pub struct SysUserUpdate {
+pub struct UpdateSysUser {
     pub id: i64,
     pub mobile: String,
     pub user_name: String,
@@ -54,7 +54,7 @@ pub struct SysUser {
 
 impl SysUser {
     // 添加用户信息
-    pub fn add_user(s_user: SysUserAdd) -> BaseResponse<String> {
+    pub fn add_user(s_user: AddSysUser) -> BaseResponse<String> {
         match &mut RB.clone().get() {
             Ok(conn) => {
                 let query = diesel::insert_into(sys_user::table()).values(s_user);

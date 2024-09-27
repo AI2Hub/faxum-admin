@@ -1,4 +1,4 @@
-use std::{env, net::SocketAddr};
+use std::{env};
 
 use axum::{middleware, Router, routing::{get, post}};
 use diesel::MysqlConnection;
@@ -35,21 +35,21 @@ async fn main() {
             .route("/query_user_role", post(user_handler::query_user_role))
             .route("/update_user_role", post(user_handler::update_user_role))
             .route("/query_user_menu", get(user_handler::query_user_menu))
-            .route("/user_list", post(user_handler::user_list))
-            .route("/user_save", post(user_handler::user_save))
-            .route("/user_delete", post(user_handler::user_delete))
-            .route("/user_update", post(user_handler::user_update))
+            .route("/user_list", post(user_handler::query_user_list))
+            .route("/user_save", post(user_handler::add_user))
+            .route("/user_delete", post(user_handler::delete_user))
+            .route("/user_update", post(user_handler::update_user))
             .route("/update_user_password", post(user_handler::update_user_password))
             .route("/query_role_menu", post(role_handler::query_role_menu))
             .route("/update_role_menu", post(role_handler::update_role_menu))
-            .route("/role_list", post(role_handler::role_list))
-            .route("/role_save", post(role_handler::role_save))
-            .route("/role_delete", post(role_handler::role_delete))
-            .route("/role_update", post(role_handler::role_update))
-            .route("/menu_list", post(menu_handler::menu_list))
-            .route("/menu_save", post(menu_handler::menu_save))
-            .route("/menu_delete", post(menu_handler::menu_delete))
-            .route("/menu_update", post(menu_handler::menu_update))
+            .route("/role_list", post(role_handler::query_role_list))
+            .route("/role_save", post(role_handler::add_role))
+            .route("/role_delete", post(role_handler::delete_role))
+            .route("/role_update", post(role_handler::update_role))
+            .route("/menu_list", post(menu_handler::query_menu_list))
+            .route("/menu_save", post(menu_handler::add_menu))
+            .route("/menu_delete", post(menu_handler::delete_menu))
+            .route("/menu_update", post(menu_handler::update_menu))
             .route_layer(middleware::from_fn(auth)));
 
 
