@@ -1,15 +1,16 @@
-use std::{env};
+use std::env;
 
-use axum::{middleware, Router, routing::{get, post}};
+use axum::{middleware as md, routing::{get, post}, Router};
 use sea_orm::{Database, DatabaseConnection};
-
-use crate::handler::{menu_handler, role_handler, user_handler};
-use crate::utils::auth::auth;
+use handler::system::{menu_handler, role_handler, user_handler};
+use middleware::auth::auth;
 
 pub mod model;
 pub mod vo;
 pub mod handler;
 pub mod utils;
+pub mod middleware;
+pub mod common;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -47,7 +48,7 @@ async fn main() {
             .route("/menu_save", post(menu_handler::menu_save))
             .route("/menu_delete", post(menu_handler::menu_delete))
             .route("/menu_update", post(menu_handler::menu_update))
-            .route_layer(middleware::from_fn(auth))
+            .route_layer(md::from_fn(auth))
             .with_state(state));
 
     //axum 0.6.x

@@ -5,10 +5,11 @@ use sea_orm::{ColumnTrait, EntityTrait, NotSet, PaginatorTrait, QueryFilter, Que
 use sea_orm::ActiveValue::Set;
 
 use crate::AppState;
+use crate::common::result::BaseResponse;
+use crate::common::result_page::ResponsePage;
 use crate::model::{sys_role, sys_role_menu, sys_user_role};
 use crate::model::prelude::{SysMenu, SysRole, SysRoleMenu, SysUserRole};
-use crate::vo::{err_result_msg, ok_result_data, ok_result_msg, ok_result_page};
-use crate::vo::role_vo::*;
+use crate::vo::system::role_vo::*;
 
 // 查询角色列表
 pub async fn role_list(state: State<AppState>, Json(item): Json<RoleListReq>) -> impl IntoResponse {
@@ -40,7 +41,7 @@ pub async fn role_list(state: State<AppState>, Json(item): Json<RoleListReq>) ->
         })
     }
 
-    Json(ok_result_page(role_list, total))
+    ResponsePage::<Vec<RoleListData>>::ok_result_page(role_list, total)
 }
 
 // 添加角色信息
@@ -58,8 +59,11 @@ pub async fn role_save(state: State<AppState>, Json(role): Json<RoleSaveReq>) ->
         ..Default::default()
     };
 
-    SysRole::insert(sys_role).exec(conn).await.unwrap();
-    Json(ok_result_msg("添加角色成功!"))
+    let result=SysRole::insert(sys_role).exec(conn).await;
+    match result {
+        Ok(_u) => BaseResponse::<String>::ok_result(),
+        Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
+    }
 }
 
 // 更新角色信息
@@ -69,7 +73,7 @@ pub async fn role_update(state: State<AppState>, Json(role): Json<RoleUpdateReq>
 
 
     if SysRole::find_by_id(role.id.clone()).one(conn).await.unwrap_or_default().is_none() {
-        return Json(err_result_msg("角色不存在,不能更新!"));
+        return BaseResponse::<String>::err_result_msg("角色不存在,不能更新!".to_string());
     }
     let sys_role = sys_role::ActiveModel {
         id: Set(role.id),
@@ -80,8 +84,11 @@ pub async fn role_update(state: State<AppState>, Json(role): Json<RoleUpdateReq>
         ..Default::default()
     };
 
-    SysRole::update(sys_role).exec(conn).await.unwrap();
-    Json(ok_result_msg("更新角色成功!"))
+    let result=SysRole::update(sys_role).exec(conn).await;
+    match result {
+        Ok(_u) => BaseResponse::<String>::ok_result(),
+        Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
+    }
 }
 
 // 删除角色信息
@@ -92,11 +99,14 @@ pub async fn role_delete(state: State<AppState>, Json(item): Json<RoleDeleteReq>
     let ids = item.ids.clone();
 
     if SysUserRole::find().filter(sys_user_role::Column::RoleId.is_in(ids)).count(conn).await.unwrap_or_default() > 0 {
-        return Json(err_result_msg("角色已被使用,不能直接删除！"));
+        return BaseResponse::<String>::err_result_msg("角色已被使用,不能直接删除!".to_string());
     }
 
-    SysRole::delete_many().filter(sys_role::Column::Id.is_in(item.ids.clone())).exec(conn).await.unwrap();
-    Json(ok_result_msg("删除角色信息成功!"))
+    let result=SysRole::delete_many().filter(sys_role::Column::Id.is_in(item.ids.clone())).exec(conn).await;
+    match result {
+        Ok(_u) => BaseResponse::<String>::ok_result(),
+        Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
+    }
 }
 
 // 查询角色关联的菜单
@@ -127,7 +137,7 @@ pub async fn query_role_menu(state: State<AppState>, Json(item): Json<QueryRoleM
         }
     }
 
-    Json(ok_result_data(QueryRoleMenuData { role_menus: role_menu_ids, menu_list: menu_data_list }))
+    BaseResponse::<QueryRoleMenuData>::ok_result_data(QueryRoleMenuData { role_menus: role_menu_ids, menu_list: menu_data_list })
 }
 
 // 更新角色关联的菜单
@@ -150,6 +160,9 @@ pub async fn update_role_menu(state: State<AppState>, Json(item): Json<UpdateRol
             ..Default::default()
         })
     }
-    SysRoleMenu::insert_many(menu_role).exec(conn).await.unwrap();
-    Json(ok_result_msg("更新角色关联的菜单!"))
+    let result=SysRoleMenu::insert_many(menu_role).exec(conn).await;
+    match result {
+        Ok(_u) => BaseResponse::<String>::ok_result(),
+        Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
+    }
 }

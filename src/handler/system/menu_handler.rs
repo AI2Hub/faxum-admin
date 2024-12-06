@@ -1,15 +1,16 @@
 use axum::extract::State;
-use axum::Json;
 use axum::response::IntoResponse;
-use sea_orm::{ColumnTrait, EntityTrait, NotSet, PaginatorTrait, QueryFilter, QueryOrder};
+use axum::Json;
 use sea_orm::ActiveValue::Set;
+use sea_orm::{ColumnTrait, EntityTrait, NotSet, PaginatorTrait, QueryFilter, QueryOrder};
 
-use crate::AppState;
+use crate::common::result::BaseResponse;
+use crate::common::result_page::ResponsePage;
 use crate::model::prelude::SysMenu;
 use crate::model::sys_menu;
 use crate::model::sys_menu::ActiveModel;
-use crate::vo::{err_result_msg, ok_result_msg, ok_result_page};
-use crate::vo::menu_vo::{*};
+use crate::vo::system::menu_vo::*;
+use crate::AppState;
 
 // 查询菜单
 pub async fn menu_list(state: State<AppState>, Json(item): Json<MenuListReq>) -> impl IntoResponse {
@@ -18,7 +19,12 @@ pub async fn menu_list(state: State<AppState>, Json(item): Json<MenuListReq>) ->
 
     let mut menu_list: Vec<MenuListData> = Vec::new();
 
-    for menu in SysMenu::find().order_by_asc(sys_menu::Column::Sort).all(conn).await.unwrap_or_default() {
+    for menu in SysMenu::find()
+        .order_by_asc(sys_menu::Column::Sort)
+        .all(conn)
+        .await
+        .unwrap_or_default()
+    {
         menu_list.push(MenuListData {
             id: menu.id,
             sort: menu.sort,
@@ -36,7 +42,7 @@ pub async fn menu_list(state: State<AppState>, Json(item): Json<MenuListReq>) ->
         })
     }
 
-    Json(ok_result_page(menu_list, 0))
+    ResponsePage::ok_result(menu_list)
 }
 
 // 添加菜单
@@ -58,17 +64,28 @@ pub async fn menu_save(state: State<AppState>, Json(menu): Json<MenuSaveReq>) ->
         ..Default::default()
     };
 
-    SysMenu::insert(sys_menu).exec(conn).await.unwrap();
-    Json(ok_result_msg("添加菜单信息成功!"))
+    let result = SysMenu::insert(sys_menu).exec(conn).await;
+    match result {
+        Ok(_u) => BaseResponse::<String>::ok_result(),
+        Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
+    }
 }
 
 // 更新菜单
-pub async fn menu_update(state: State<AppState>, Json(menu): Json<MenuUpdateReq>) -> impl IntoResponse {
+pub async fn menu_update(
+    state: State<AppState>,
+    Json(menu): Json<MenuUpdateReq>,
+) -> impl IntoResponse {
     log::info!("menu_update params: {:?}", &menu);
     let conn = &state.conn;
 
-    if SysMenu::find_by_id(menu.id.clone()).one(conn).await.unwrap_or_default().is_none() {
-        return Json(err_result_msg("菜单不存在,不能更新!"));
+    if SysMenu::find_by_id(menu.id.clone())
+        .one(conn)
+        .await
+        .unwrap_or_default()
+        .is_none()
+    {
+        return BaseResponse::<String>::err_result_msg("菜单不存在,不能更新!".to_string());
     }
 
     let sys_menu = ActiveModel {
@@ -85,23 +102,43 @@ pub async fn menu_update(state: State<AppState>, Json(menu): Json<MenuUpdateReq>
         ..Default::default()
     };
 
-    SysMenu::update(sys_menu).exec(conn).await.unwrap();
-    Json(ok_result_msg("更新菜单信息成功!"))
+    let result = SysMenu::update(sys_menu).exec(conn).await;
+    match result {
+        Ok(_u) => BaseResponse::<String>::ok_result(),
+        Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
+    }
 }
 
 // 删除菜单信息
-pub async fn menu_delete(state: State<AppState>, Json(item): Json<MenuDeleteReq>) -> impl IntoResponse {
+pub async fn menu_delete(
+    state: State<AppState>,
+    Json(item): Json<MenuDeleteReq>,
+) -> impl IntoResponse {
     log::info!("menu_delete params: {:?}", &item);
     let conn = &state.conn;
 
-    if SysMenu::find_by_id(item.id.clone()).one(conn).await.unwrap_or_default().is_none() {
-        return Json(err_result_msg("菜单不存在,不能删除!"));
+    if SysMenu::find_by_id(item.id.clone())
+        .one(conn)
+        .await
+        .unwrap_or_default()
+        .is_none()
+    {
+        return BaseResponse::<String>::err_result_msg("菜单不存在,不能删除!".to_string());
     }
 
-    if SysMenu::find().filter(sys_menu::Column::ParentId.eq(item.id.clone())).count(conn).await.unwrap_or_default() > 0 {
-        return Json(err_result_msg("有下级菜单,不能直接删除!"));
+    if SysMenu::find()
+        .filter(sys_menu::Column::ParentId.eq(item.id.clone()))
+        .count(conn)
+        .await
+        .unwrap_or_default()
+        > 0
+    {
+        return BaseResponse::<String>::err_result_msg("有下级菜单,不能直接删除!".to_string());
     }
 
-    SysMenu::delete_by_id(item.id.clone()).exec(conn).await.unwrap();
-    Json(ok_result_msg("删除菜单信息成功!"))
+    let result = SysMenu::delete_by_id(item.id.clone()).exec(conn).await;
+    match result {
+        Ok(_u) => BaseResponse::<String>::ok_result(),
+        Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
+    }
 }
