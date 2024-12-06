@@ -3,13 +3,13 @@ use axum::response::IntoResponse;
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use diesel::associations::HasTable;
 use log::{debug, error};
-
+use crate::common::result::BaseResponse;
+use crate::common::result_page::ResponsePage;
 use crate::model::menu::{SysMenu, AddSysMenu, UpdateSysMenu};
 use crate::RB;
 use crate::schema::sys_menu::{id, parent_id, sort, status_id};
 use crate::schema::sys_menu::dsl::sys_menu;
-use crate::vo::{err_result_msg, err_result_page, handle_result, ok_result_page};
-use crate::vo::menu_vo::{*};
+use crate::vo::system::menu_vo::{*};
 
 // 添加菜单
 pub async fn add_menu(Json(req): Json<MenuSaveReq>) -> impl IntoResponse {
@@ -29,11 +29,15 @@ pub async fn add_menu(Json(req): Json<MenuSaveReq>) -> impl IntoResponse {
 
     match &mut RB.clone().get() {
         Ok(conn) => {
-            Json(handle_result(diesel::insert_into(sys_menu::table()).values(menu_add).execute(conn)))
+            let result = diesel::insert_into(sys_menu::table()).values(menu_add).execute(conn);
+            match result {
+                Ok(_u) => BaseResponse::<String>::ok_result(),
+                Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
+            }
         }
         Err(err) => {
             error!("err:{}", err.to_string());
-            Json(err_result_msg(err.to_string()))
+            BaseResponse::<String>::err_result_msg(err.to_string())
         }
     }
 }
@@ -47,19 +51,23 @@ pub async fn delete_menu(Json(req): Json<MenuDeleteReq>) -> impl IntoResponse {
                 Ok(count) => {
                     if count > 0 {
                         error!("err:{}", "有下级菜单,不能直接删除".to_string());
-                        return Json(err_result_msg("有下级菜单,不能直接删除".to_string()));
+                        return BaseResponse::<String>::err_result_msg("有下级菜单,不能直接删除".to_string());
                     }
-                    Json(handle_result(diesel::delete(sys_menu.filter(id.eq(&req.id))).execute(conn)))
+                    let result = diesel::delete(sys_menu.filter(id.eq(&req.id))).execute(conn);
+                    match result {
+                        Ok(_u) => BaseResponse::<String>::ok_result(),
+                        Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
+                    }
                 }
                 Err(err) => {
                     error!("err:{}", err.to_string());
-                    Json(err_result_msg(err.to_string()))
+                    BaseResponse::<String>::err_result_msg(err.to_string())
                 }
             }
         }
         Err(err) => {
             error!("err:{}", err.to_string());
-            Json(err_result_msg(err.to_string()))
+            BaseResponse::<String>::err_result_msg(err.to_string())
         }
     }
 }
@@ -83,11 +91,15 @@ pub async fn update_menu(Json(req): Json<MenuUpdateReq>) -> impl IntoResponse {
 
     match &mut RB.clone().get() {
         Ok(conn) => {
-            Json(handle_result(diesel::update(sys_menu).filter(id.eq(&req.id)).set(update_sys_menu).execute(conn)))
+            let result = diesel::update(sys_menu).filter(id.eq(&req.id)).set(update_sys_menu).execute(conn);
+            match result {
+                Ok(_u) => BaseResponse::<String>::ok_result(),
+                Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
+            }
         }
         Err(err) => {
             error!("err:{}", err.to_string());
-            Json(err_result_msg(err.to_string()))
+            BaseResponse::<String>::err_result_msg(err.to_string())
         }
     }
 }
@@ -126,11 +138,11 @@ pub async fn query_menu_list(Json(req): Json<MenuListReq>) -> impl IntoResponse 
                 }
             }
 
-            Json(ok_result_page(menu_list, 0))
+            ResponsePage::ok_result(menu_list)
         }
         Err(err) => {
             error!("err:{}", err.to_string());
-            Json(err_result_page(menu_list, err.to_string()))
+            ResponsePage::err_result_page(menu_list, err.to_string())
         }
     }
 }

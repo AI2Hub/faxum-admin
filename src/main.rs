@@ -1,12 +1,11 @@
-use std::{env};
+use std::env;
 
-use axum::{middleware as md, Router, routing::{get, post}};
+use axum::{middleware as md, routing::{get, post}, Router};
 use diesel::MysqlConnection;
 use diesel::r2d2::{self, ConnectionManager};
 use dotenvy::dotenv;
 use once_cell::sync::Lazy;
-
-use crate::handler::{menu_handler, role_handler, user_handler};
+use handler::system::{menu_handler, role_handler, user_handler};
 use crate::middleware::auth::auth;
 
 pub mod model;
@@ -15,6 +14,7 @@ pub mod handler;
 pub mod utils;
 pub mod schema;
 pub mod middleware;
+pub mod common;
 
 type DbPool = r2d2::Pool<ConnectionManager<MysqlConnection>>;
 
