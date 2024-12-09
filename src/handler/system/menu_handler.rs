@@ -5,9 +5,9 @@ use sea_orm::ActiveValue::Set;
 use sea_orm::{ColumnTrait, EntityTrait, NotSet, PaginatorTrait, QueryFilter, QueryOrder};
 
 use crate::common::result::BaseResponse;
-use crate::model::prelude::SysMenu;
-use crate::model::sys_menu;
-use crate::model::sys_menu::ActiveModel;
+use crate::model::system::prelude::SysMenu;
+use crate::model::system::sys_menu;
+use crate::model::system::sys_menu::ActiveModel;
 use crate::vo::system::menu_vo::*;
 use crate::AppState;
 
