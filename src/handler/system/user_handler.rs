@@ -8,10 +8,10 @@ use diesel::{sql_query, ExpressionMethods, QueryDsl, RunQueryDsl};
 use log::{debug, error, info, warn};
 
 use crate::common::result::BaseResponse;
-use crate::model::menu::{StringColumn, SysMenu};
-use crate::model::role::SysRole;
-use crate::model::user::{AddSysUser, SysUser, UpdateSysUser};
-use crate::model::user_role::{AddSysUserRole, SysUserRole};
+use crate::model::system::menu::{StringColumn, SysMenu};
+use crate::model::system::role::SysRole;
+use crate::model::system::user::{AddSysUser, SysUser, UpdateSysUser};
+use crate::model::system::user_role::{AddSysUserRole, SysUserRole};
 use crate::schema::sys_menu::dsl::sys_menu;
 use crate::schema::sys_menu::{api_url, sort};
 use crate::schema::sys_role::dsl::sys_role;

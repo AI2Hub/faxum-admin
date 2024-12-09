@@ -4,7 +4,7 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use diesel::associations::HasTable;
 use log::{debug, error};
 use crate::common::result::BaseResponse;
-use crate::model::menu::{SysMenu, AddSysMenu, UpdateSysMenu};
+use crate::model::system::menu::{SysMenu, AddSysMenu, UpdateSysMenu};
 use crate::RB;
 use crate::schema::sys_menu::{id, parent_id, sort, status_id};
 use crate::schema::sys_menu::dsl::sys_menu;
