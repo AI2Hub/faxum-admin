@@ -10,7 +10,6 @@ use sea_orm::ActiveValue::Set;
 use crate::AppState;
 use crate::common::error::WhoUnfollowedError;
 use crate::common::result::BaseResponse;
-use crate::common::result_page::ResponsePage;
 use crate::model::{sys_menu, sys_user, sys_user_role};
 use crate::model::prelude::{SysMenu, SysRole, SysUser, SysUserRole};
 use crate::utils::jwt_util::JWTToken;
@@ -248,7 +247,7 @@ pub async fn user_list(state: State<AppState>, Json(item): Json<UserListReq>) ->
         })
     }
 
-    ResponsePage::<Vec<UserListData>>::ok_result_page(list_data, total)
+    BaseResponse::<Vec<UserListData>>::ok_result_page(list_data, total)
 }
 
 // 添加用户信息

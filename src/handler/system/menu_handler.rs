@@ -5,7 +5,6 @@ use sea_orm::ActiveValue::Set;
 use sea_orm::{ColumnTrait, EntityTrait, NotSet, PaginatorTrait, QueryFilter, QueryOrder};
 
 use crate::common::result::BaseResponse;
-use crate::common::result_page::ResponsePage;
 use crate::model::prelude::SysMenu;
 use crate::model::sys_menu;
 use crate::model::sys_menu::ActiveModel;
@@ -42,7 +41,7 @@ pub async fn menu_list(state: State<AppState>, Json(item): Json<MenuListReq>) ->
         })
     }
 
-    ResponsePage::ok_result(menu_list)
+    BaseResponse::ok_result_page(menu_list, 0)
 }
 
 // 添加菜单
