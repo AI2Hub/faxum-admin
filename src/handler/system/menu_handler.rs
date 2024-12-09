@@ -4,7 +4,6 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use diesel::associations::HasTable;
 use log::{debug, error};
 use crate::common::result::BaseResponse;
-use crate::common::result_page::ResponsePage;
 use crate::model::menu::{SysMenu, AddSysMenu, UpdateSysMenu};
 use crate::RB;
 use crate::schema::sys_menu::{id, parent_id, sort, status_id};
@@ -138,11 +137,11 @@ pub async fn query_menu_list(Json(req): Json<MenuListReq>) -> impl IntoResponse 
                 }
             }
 
-            ResponsePage::ok_result(menu_list)
+            BaseResponse::ok_result_page(menu_list, 0)
         }
         Err(err) => {
             error!("err:{}", err.to_string());
-            ResponsePage::err_result_page(menu_list, err.to_string())
+            BaseResponse::err_result_page(menu_list, err.to_string())
         }
     }
 }

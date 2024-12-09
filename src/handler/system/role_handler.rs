@@ -5,7 +5,6 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use log::{debug, error};
 
 use crate::common::result::BaseResponse;
-use crate::common::result_page::ResponsePage;
 use crate::model::menu::SysMenu;
 use crate::model::role::{AddSysRole, SysRole, UpdateSysRole};
 use crate::model::role_menu::AddSysRoleMenu;
@@ -148,7 +147,7 @@ pub async fn query_role_list(
                 }
             }
 
-            Ok(ResponsePage::ok_result_page(list, 10))
+            Ok(BaseResponse::ok_result_page(list, 10))
         }
         Err(err) => {
             error!("err:{}", err.to_string());

@@ -8,7 +8,6 @@ use diesel::{sql_query, ExpressionMethods, QueryDsl, RunQueryDsl};
 use log::{debug, error, info, warn};
 
 use crate::common::result::BaseResponse;
-use crate::common::result_page::ResponsePage;
 use crate::model::menu::{StringColumn, SysMenu};
 use crate::model::role::SysRole;
 use crate::model::user::{AddSysUser, SysUser, UpdateSysUser};
@@ -177,7 +176,7 @@ pub async fn query_user_list(
                     })
                 }
             }
-            Ok(ResponsePage::ok_result_page(list_data, 10))
+            Ok(BaseResponse::ok_result_page(list_data, 10))
         }
         Err(err) => {
             error!("err:{}", err.to_string());
