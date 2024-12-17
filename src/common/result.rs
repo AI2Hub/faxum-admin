@@ -25,7 +25,6 @@ where
     pub data: Option<T>,
 }
 
-
 impl<T> BaseResponse<T>
 where
     T: Serialize + Debug + Send,
@@ -62,6 +61,14 @@ where
         })
     }
 
+    pub fn err_result_data(data: T, msg: String) -> Json<BaseResponse<T>> {
+        Json(BaseResponse {
+            msg,
+            code: 1,
+            data: Some(data),
+        })
+    }
+
     pub fn err_result_msg(msg: String) -> Json<BaseResponse<String>> {
         Json(BaseResponse {
             msg: msg.to_string(),
@@ -87,7 +94,6 @@ where
             total,
         })
     }
-
 
     pub fn err_result_page(data: T, msg: String) -> Json<ResponsePage<T>> {
         Json(ResponsePage {

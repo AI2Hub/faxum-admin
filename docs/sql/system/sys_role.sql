@@ -5,7 +5,7 @@ create table sys_role
     role_name   varchar(50)                        not null comment '名称',
     status_id   tinyint  default 1                 not null comment '状态(1:正常，0:禁用)',
     sort        int      default 1                 not null comment '排序',
-    remark      varchar(255)                       not null comment '备注',
+    remark      varchar(255)   default ''          not null comment '备注',
     create_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     update_time datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '修改时间',
     constraint role_name
