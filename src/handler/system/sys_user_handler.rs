@@ -9,10 +9,13 @@ use axum::extract::State;
 use axum::http::HeaderMap;
 use axum::response::IntoResponse;
 use axum::Json;
-use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseBackend, DatabaseConnection, EntityTrait, NotSet, PaginatorTrait, QueryFilter, QueryOrder, QueryTrait, Statement};
-use std::collections::HashSet;
 use sea_orm::prelude::Expr;
+use sea_orm::ActiveValue::Set;
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseBackend, DatabaseConnection,
+    EntityTrait, NotSet, PaginatorTrait, QueryFilter, QueryOrder, QueryTrait, Statement,
+};
+use std::collections::HashSet;
 /*
  *添加用户信息
  *author：刘飞华
@@ -121,10 +124,10 @@ pub async fn update_sys_user_status(
     let conn = &state.conn;
 
     let result = SysUser::update_many()
-       .col_expr(sys_user::Column::StatusId, Expr::value(item.status))
-       .filter(sys_user::Column::Id.is_in(item.ids))
-       .exec(conn)
-       .await;
+        .col_expr(sys_user::Column::StatusId, Expr::value(item.status))
+        .filter(sys_user::Column::Id.is_in(item.ids))
+        .exec(conn)
+        .await;
     match result {
         Ok(_u) => BaseResponse::<String>::ok_result(),
         Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
@@ -143,7 +146,10 @@ pub async fn update_user_password(
     log::info!("update_user_pwd params: {:?}", &user_pwd);
     let conn = &state.conn;
 
-    let result = SysUser::find_by_id(user_pwd.id).one(conn).await.unwrap_or_default();
+    let result = SysUser::find_by_id(user_pwd.id)
+        .one(conn)
+        .await
+        .unwrap_or_default();
     if result.is_none() {
         return BaseResponse::<String>::err_result_msg("用户不存在!".to_string());
     };
@@ -153,7 +159,7 @@ pub async fn update_user_password(
         let mut s_user: sys_user::ActiveModel = user.into();
         s_user.password = Set(Some(user_pwd.re_pwd));
 
-        let result=s_user.update(conn).await;
+        let result = s_user.update(conn).await;
         match result {
             Ok(_u) => BaseResponse::<String>::ok_result(),
             Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
@@ -175,21 +181,19 @@ pub async fn query_sys_user_detail(
     log::info!("query sys_user_detail params: {:?}", &item);
     let conn = &state.conn;
 
-    let result = SysUser::find_by_id(item.id.clone())
-        .one(conn)
-        .await;
+    let result = SysUser::find_by_id(item.id.clone()).one(conn).await;
 
     match result {
         Ok(d) => {
             let x = d.unwrap();
 
             let sys_user = QueryUserDetailResp {
-                id: x.id,                                 //主键
-                mobile: x.mobile,                                  //手机
-                user_name: x.user_name,                            //姓名
-                status_id: x.status_id,                            //状态(1:正常，0:禁用)
-                sort: x.sort,                                      //排序
-                remark: x.remark.unwrap_or_default(),              //备注
+                id: x.id,                               //主键
+                mobile: x.mobile,                       //手机
+                user_name: x.user_name,                 //姓名
+                status_id: x.status_id,                 //状态(1:正常，0:禁用)
+                sort: x.sort,                           //排序
+                remark: x.remark.unwrap_or_default(),   //备注
                 create_time: x.create_time.to_string(), //创建时间
                 update_time: x.update_time.to_string(), //修改时间
             };
@@ -216,9 +220,15 @@ pub async fn query_sys_user_list(
     let conn = &state.conn;
 
     let paginator = SysUser::find()
-        .apply_if(item.mobile.clone(), |query, v| { query.filter( sys_user::Column::Mobile.eq(v))})
-        .apply_if(item.user_name.clone(), |query, v| { query.filter( sys_user::Column::UserName.eq(v))})
-        .apply_if(item.status_id.clone(), |query, v| { query.filter( sys_user::Column::StatusId.eq(v))})
+        .apply_if(item.mobile.clone(), |query, v| {
+            query.filter(sys_user::Column::Mobile.eq(v))
+        })
+        .apply_if(item.user_name.clone(), |query, v| {
+            query.filter(sys_user::Column::UserName.eq(v))
+        })
+        .apply_if(item.status_id.clone(), |query, v| {
+            query.filter(sys_user::Column::StatusId.eq(v))
+        })
         .paginate(conn, item.page_size.clone());
 
     let total = paginator.num_items().await.unwrap_or_default();

@@ -1,14 +1,14 @@
-use crate::AppState;
-use axum::extract::State;
-use axum::response::IntoResponse;
-use axum::Json;
-use sea_orm::ActiveValue::Set;
-use sea_orm::{ColumnTrait, EntityTrait, NotSet, PaginatorTrait, QueryFilter, QueryOrder};
-use sea_orm::prelude::Expr;
 use crate::common::result::BaseResponse;
 use crate::model::system::prelude::SysMenu;
 use crate::model::system::sys_menu;
 use crate::vo::system::sys_menu_vo::*;
+use crate::AppState;
+use axum::extract::State;
+use axum::response::IntoResponse;
+use axum::Json;
+use sea_orm::prelude::Expr;
+use sea_orm::ActiveValue::Set;
+use sea_orm::{ColumnTrait, EntityTrait, NotSet, PaginatorTrait, QueryFilter, QueryOrder};
 
 /*
  *添加菜单信息
@@ -139,10 +139,10 @@ pub async fn update_sys_menu_status(
     let conn = &state.conn;
 
     let result = SysMenu::update_many()
-       .col_expr(sys_menu::Column::StatusId, Expr::value(item.status))
-       .filter(sys_menu::Column::Id.is_in(item.ids))
-       .exec(conn)
-       .await;
+        .col_expr(sys_menu::Column::StatusId, Expr::value(item.status))
+        .filter(sys_menu::Column::Id.is_in(item.ids))
+        .exec(conn)
+        .await;
     match result {
         Ok(_u) => BaseResponse::<String>::ok_result(),
         Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
@@ -161,27 +161,25 @@ pub async fn query_sys_menu_detail(
     log::info!("query sys_menu_detail params: {:?}", &item);
     let conn = &state.conn;
 
-    let result = SysMenu::find_by_id(item.id.clone())
-        .one(conn)
-        .await;
+    let result = SysMenu::find_by_id(item.id.clone()).one(conn).await;
 
     match result {
         Ok(d) => {
             let x = d.unwrap();
 
             let sys_menu = QueryMenuDetailResp {
-                id: x.id,                                 //主键
-                menu_name: x.menu_name,                            //菜单名称
-                menu_type: x.menu_type, //菜单类型(1：目录   2：菜单   3：按钮)
-                status_id: x.status_id, //状态(1:正常，0:禁用)
-                sort: x.sort,           //排序
-                parent_id: x.parent_id, //父ID
-                menu_url: x.menu_url.unwrap_or_default(), //路由路径
-                api_url: x.api_url.unwrap_or_default(), //接口URL
+                id: x.id,                                   //主键
+                menu_name: x.menu_name,                     //菜单名称
+                menu_type: x.menu_type,                     //菜单类型(1：目录   2：菜单   3：按钮)
+                status_id: x.status_id,                     //状态(1:正常，0:禁用)
+                sort: x.sort,                               //排序
+                parent_id: x.parent_id,                     //父ID
+                menu_url: x.menu_url.unwrap_or_default(),   //路由路径
+                api_url: x.api_url.unwrap_or_default(),     //接口URL
                 menu_icon: x.menu_icon.unwrap_or_default(), //菜单图标
-                remark: x.remark.unwrap_or_default(), //备注
-                create_time: x.create_time.to_string(), //创建时间
-                update_time: x.update_time.to_string(), //修改时间
+                remark: x.remark.unwrap_or_default(),       //备注
+                create_time: x.create_time.to_string(),     //创建时间
+                update_time: x.update_time.to_string(),     //修改时间
             };
 
             BaseResponse::<QueryMenuDetailResp>::ok_result_data(sys_menu)

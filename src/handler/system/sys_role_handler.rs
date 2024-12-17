@@ -1,15 +1,14 @@
-use crate::AppState;
-use axum::extract::State;
-use axum::response::IntoResponse;
-use axum::Json;
-use sea_orm::ActiveValue::Set;
-use sea_orm::{ColumnTrait, EntityTrait, NotSet, PaginatorTrait, QueryFilter, QueryTrait,
-};
-use sea_orm::prelude::Expr;
 use crate::common::result::BaseResponse;
 use crate::model::system::prelude::{SysMenu, SysRole, SysRoleMenu, SysUserRole};
 use crate::model::system::{sys_role, sys_role_menu, sys_user_role};
 use crate::vo::system::sys_role_vo::*;
+use crate::AppState;
+use axum::extract::State;
+use axum::response::IntoResponse;
+use axum::Json;
+use sea_orm::prelude::Expr;
+use sea_orm::ActiveValue::Set;
+use sea_orm::{ColumnTrait, EntityTrait, NotSet, PaginatorTrait, QueryFilter, QueryTrait};
 
 /*
  *添加角色信息
@@ -127,10 +126,10 @@ pub async fn update_sys_role_status(
     let conn = &state.conn;
 
     let result = SysRole::update_many()
-       .col_expr(sys_role::Column::StatusId, Expr::value(item.status))
-       .filter(sys_role::Column::Id.is_in(item.ids))
-       .exec(conn)
-       .await;
+        .col_expr(sys_role::Column::StatusId, Expr::value(item.status))
+        .filter(sys_role::Column::Id.is_in(item.ids))
+        .exec(conn)
+        .await;
     match result {
         Ok(_u) => BaseResponse::<String>::ok_result(),
         Err(err) => BaseResponse::<String>::err_result_msg(err.to_string()),
@@ -149,20 +148,18 @@ pub async fn query_sys_role_detail(
     log::info!("query sys_role_detail params: {:?}", &item);
     let conn = &state.conn;
 
-    let result = SysRole::find_by_id(item.id.clone())
-        .one(conn)
-        .await;
+    let result = SysRole::find_by_id(item.id.clone()).one(conn).await;
 
     match result {
         Ok(d) => {
             let x = d.unwrap();
 
             let sys_role = QueryRoleDetailResp {
-                id: x.id,                                 //主键
-                role_name: x.role_name,                            //名称
-                status_id: x.status_id,                            //状态(1:正常，0:禁用)
-                sort: x.sort,                                      //排序
-                remark: x.remark,                                  //备注
+                id: x.id,                               //主键
+                role_name: x.role_name,                 //名称
+                status_id: x.status_id,                 //状态(1:正常，0:禁用)
+                sort: x.sort,                           //排序
+                remark: x.remark,                       //备注
                 create_time: x.create_time.to_string(), //创建时间
                 update_time: x.update_time.to_string(), //修改时间
             };
