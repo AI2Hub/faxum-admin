@@ -1,5 +1,5 @@
 // author：刘飞华
-// createTime：2024/12/12 14:41:44
+// createTime：2024/12/19 14:21:03
 
 use serde::{Deserialize, Serialize};
 
@@ -19,7 +19,7 @@ pub struct AddRoleReq {
 */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DeleteRoleReq {
-    pub ids: Vec<i64>,
+    pub ids: Vec<i64>, //角色Ids
 }
 
 /*
@@ -39,8 +39,8 @@ pub struct UpdateRoleReq {
 */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateRoleStatusReq {
-    pub ids: Vec<i64>,
-    pub status: i8,
+    pub ids: Vec<i64>, //角色Ids
+    pub status: i8,    //角色状态
 }
 
 /*
@@ -48,7 +48,7 @@ pub struct UpdateRoleStatusReq {
 */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct QueryRoleDetailReq {
-    pub id: i64,
+    pub id: i64, //角色Id
 }
 
 /*
@@ -56,25 +56,25 @@ pub struct QueryRoleDetailReq {
 */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct QueryRoleDetailResp {
-    pub id: i64,                //主键
-    pub role_name: String,      //名称
-    pub status_id: i8,          //状态(1:正常，0:禁用)
-    pub sort: i32,              //排序
-    pub remark: Option<String>, //备注
-    pub create_time: String,    //创建时间
-    pub update_time: String,    //修改时间
+    pub id: i64,             //主键
+    pub role_name: String,   //名称
+    pub status_id: i8,       //状态(1:正常，0:禁用)
+    pub sort: i32,           //排序
+    pub remark: String,      //备注
+    pub create_time: String, //创建时间
+    pub update_time: String, //修改时间
 }
 
 impl QueryRoleDetailResp {
     pub fn new() -> QueryRoleDetailResp {
         QueryRoleDetailResp {
-            id: 0,
-            role_name: "".to_string(),
-            status_id: 0,
-            sort: 0,
-            remark: None,
-            create_time: "".to_string(),
-            update_time: "".to_string(),
+            id: 0,                       //主键
+            role_name: "".to_string(),   //名称
+            status_id: 0,                //状态(1:正常，0:禁用)
+            sort: 0,                     //排序
+            remark: "".to_string(),      //备注
+            create_time: "".to_string(), //创建时间
+            update_time: "".to_string(), //修改时间
         }
     }
 }
@@ -97,43 +97,44 @@ pub struct QueryRoleListReq {
 */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RoleListDataResp {
-    pub id: i64,                //主键
-    pub role_name: String,      //名称
-    pub status_id: i8,          //状态(1:正常，0:禁用)
-    pub sort: i32,              //排序
-    pub remark: Option<String>, //备注
-    pub create_time: String,    //创建时间
-    pub update_time: String,    //修改时间
+    pub id: i64,             //主键
+    pub role_name: String,   //名称
+    pub status_id: i8,       //状态(1:正常，0:禁用)
+    pub sort: i32,           //排序
+    pub remark: String,      //备注
+    pub create_time: String, //创建时间
+    pub update_time: String, //修改时间
 }
 impl RoleListDataResp {
     pub fn new() -> Vec<RoleListDataResp> {
         Vec::new()
     }
 }
+
 /*
-查询角色菜单信息参数
+查询角色菜单请求参数
 */
 #[derive(Debug, Deserialize)]
 pub struct QueryRoleMenuReq {
-    pub role_id: i64, //角色id
+    pub role_id: i64, //角色Id
 }
 
 /*
-角色菜单信息参数
+查询角色菜单响应参数
 */
 #[derive(Debug, Serialize)]
-pub struct QueryRoleMenuData {
-    pub menu_ids: Vec<i64>,           //菜单Ids
-    pub menu_list: Vec<MenuDataList>, //菜单列表
+pub struct QueryRoleMenuResp {
+    pub menu_ids: Vec<i64>,       //菜单ids
+    pub menu_list: Vec<MenuList>, //菜单列表
 }
 
 /*
-菜单信息参数
+菜单列表
 */
 #[derive(Debug, Serialize)]
-pub struct MenuDataList {
-    pub id: i64,        //主键
-    pub parent_id: i64, //父ID
+pub struct MenuList {
+    pub id: i64,
+    pub parent_id: i64,
     pub title: String,
     pub key: String,
     pub label: String,
@@ -142,10 +143,10 @@ pub struct MenuDataList {
 }
 
 /*
-更新用户角色信息
+更新角色菜单信息
 */
 #[derive(Debug, Deserialize)]
 pub struct UpdateRoleMenuReq {
-    pub menu_ids: Vec<i64>,
-    pub role_id: i64,
+    pub menu_ids: Vec<i64>, //菜单Ids
+    pub role_id: i64,       //角色Id
 }

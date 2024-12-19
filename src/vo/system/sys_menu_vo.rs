@@ -1,5 +1,5 @@
 // author：刘飞华
-// createTime：2024/12/12 14:41:44
+// createTime：2024/12/19 14:21:03
 
 use serde::{Deserialize, Serialize};
 
@@ -24,7 +24,7 @@ pub struct AddMenuReq {
 */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DeleteMenuReq {
-    pub id: i64,
+    pub ids: i64, //菜单Id
 }
 
 /*
@@ -49,8 +49,8 @@ pub struct UpdateMenuReq {
 */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateMenuStatusReq {
-    pub ids: Vec<i64>,
-    pub status: i8,
+    pub ids: Vec<i64>, //菜单Ids
+    pub status: i8,    //菜单状态
 }
 
 /*
@@ -58,7 +58,7 @@ pub struct UpdateMenuStatusReq {
 */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct QueryMenuDetailReq {
-    pub id: i64,
+    pub id: i64, //菜单Id
 }
 
 /*
@@ -83,18 +83,18 @@ pub struct QueryMenuDetailResp {
 impl QueryMenuDetailResp {
     pub fn new() -> QueryMenuDetailResp {
         QueryMenuDetailResp {
-            id: 0,
-            menu_name: "".to_string(),
-            menu_type: 0,
-            status_id: 0,
-            sort: 0,
-            parent_id: 0,
-            menu_url: "".to_string(),
-            api_url: "".to_string(),
-            menu_icon: "".to_string(),
-            remark: "".to_string(),
-            create_time: "".to_string(),
-            update_time: "".to_string(),
+            id: 0,                       //主键
+            menu_name: "".to_string(),   //菜单名称
+            menu_type: 0,                //菜单类型(1：目录   2：菜单   3：按钮)
+            status_id: 0,                //状态(1:正常，0:禁用)
+            sort: 0,                     //排序
+            parent_id: 0,                //父ID
+            menu_url: "".to_string(),    //路由路径
+            api_url: "".to_string(),     //接口URL
+            menu_icon: "".to_string(),   //菜单图标
+            remark: "".to_string(),      //备注
+            create_time: "".to_string(), //创建时间
+            update_time: "".to_string(), //修改时间
         }
     }
 }
@@ -104,7 +104,17 @@ impl QueryMenuDetailResp {
 */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct QueryMenuListReq {
+    #[serde(rename = "current")]
+    pub page_no: u64,
+    #[serde(rename = "pageSize")]
+    pub page_size: u64,
     pub menu_name: Option<String>, //菜单名称
+    pub menu_type: Option<i8>,     //菜单类型(1：目录   2：菜单   3：按钮)
+    pub status_id: Option<i8>,     //状态(1:正常，0:禁用)
+    pub parent_id: Option<i64>,    //父ID
+    pub menu_url: Option<String>,  //路由路径
+    pub api_url: Option<String>,   //接口URL
+    pub menu_icon: Option<String>, //菜单图标
 }
 
 /*
@@ -125,7 +135,6 @@ pub struct MenuListDataResp {
     pub create_time: String, //创建时间
     pub update_time: String, //修改时间
 }
-
 impl MenuListDataResp {
     pub fn new() -> Vec<MenuListDataResp> {
         Vec::new()
