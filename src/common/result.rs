@@ -25,7 +25,6 @@ where
     pub data: Option<T>,
 }
 
-
 impl<T> BaseResponse<T>
 where
     T: Serialize + Debug + Send,

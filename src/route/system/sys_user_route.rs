@@ -1,15 +1,13 @@
 use crate::handler::system::sys_user_handler;
-use crate::AppState;
 use axum::routing::{get, post};
 use axum::Router;
-use std::sync::Arc;
 
 /*
  *构建用户信息路由
  *author：刘飞华
  *date：2024/12/12 17:04:49
  */
-pub fn build_sys_user_route() -> Router<Arc<AppState>> {
+pub fn build_sys_user_route() -> Router {
     Router::new()
         .route("/add_user", post(sys_user_handler::add_sys_user))
         .route("/delete_user", post(sys_user_handler::delete_sys_user))
@@ -32,7 +30,7 @@ pub fn build_sys_user_route() -> Router<Arc<AppState>> {
         .route("/update_user_role", get(sys_user_handler::update_user_role))
         .route(
             "/update_user_password",
-            get(sys_user_handler::update_sys_user_password),
+            get(sys_user_handler::update_user_password),
         )
     //记得在main.rs中添加路由build_sys_user_route()
 }

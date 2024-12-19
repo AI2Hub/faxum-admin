@@ -40,7 +40,6 @@ async fn main() {
             .merge(build_sys_user_route())
             .merge(build_sys_role_route())
             .merge(build_sys_menu_route())
-            .route_layer(md::from_fn(auth))
             .route_layer(md::from_fn(auth)),
     );
 

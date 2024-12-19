@@ -24,7 +24,7 @@ pub struct AddMenuReq {
 */
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DeleteMenuReq {
-    pub ids: i64, //菜单Id
+    pub id: i64, //菜单Id
 }
 
 /*

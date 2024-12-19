@@ -1,15 +1,13 @@
 use crate::handler::system::sys_role_handler;
-use crate::AppState;
 use axum::routing::post;
 use axum::Router;
-use std::sync::Arc;
 
 /*
  *构建角色信息路由
  *author：刘飞华
  *date：2024/12/12 17:04:49
  */
-pub fn build_sys_role_route() -> Router<Arc<AppState>> {
+pub fn build_sys_role_route() -> Router {
     Router::new()
         .route("/add_role", post(sys_role_handler::add_sys_role))
         .route("/delete_role", post(sys_role_handler::delete_sys_role))
