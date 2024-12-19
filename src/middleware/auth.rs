@@ -22,7 +22,7 @@ pub async fn auth(req: Request, next: Next) -> Result<response::Response, Status
     };
 
     let token = authorization.to_string().replace("Bearer ", "");
-    log::info!("token:{}",token);
+
     let jwt_token_e = JWTToken::verify("123", &token);
     let jwt_token = match jwt_token_e {
         Ok(data) => { data }
