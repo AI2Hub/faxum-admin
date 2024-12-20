@@ -178,15 +178,15 @@ pub async fn query_sys_menu_detail(
             match result {
                 Ok(x) => {
                     let data = QueryMenuDetailResp {
-                        id: x.id,                                   //主键
-                        menu_name: x.menu_name,                     //菜单名称
+                        id: x.id,                               //主键
+                        menu_name: x.menu_name,                 //菜单名称
                         menu_type: x.menu_type, //菜单类型(1：目录   2：菜单   3：按钮)
                         status_id: x.status_id, //状态(1:正常，0:禁用)
                         sort: x.sort,           //排序
                         parent_id: x.parent_id, //父ID
-                        menu_url: x.menu_url.unwrap_or_default(), //路由路径
-                        api_url: x.api_url.unwrap_or_default(), //接口URL
-                        menu_icon: x.menu_icon.unwrap_or_default(), //菜单图标
+                        menu_url: x.menu_url,   //路由路径
+                        api_url: x.api_url,     //接口URL
+                        menu_icon: x.menu_icon, //菜单图标
                         remark: x.remark.unwrap_or_default(), //备注
                         create_time: x.create_time.to_string(), //创建时间
                         update_time: x.update_time.to_string(), //修改时间
@@ -230,15 +230,15 @@ pub async fn query_sys_menu_list(Json(req): Json<QueryMenuListReq>) -> impl Into
             if let Ok(role_list) = result {
                 for x in role_list {
                     sys_menu_list_data.push(MenuListDataResp {
-                        id: x.id,                                   //主键
-                        menu_name: x.menu_name,                     //菜单名称
+                        id: x.id,                               //主键
+                        menu_name: x.menu_name,                 //菜单名称
                         menu_type: x.menu_type, //菜单类型(1：目录   2：菜单   3：按钮)
                         status_id: x.status_id, //状态(1:正常，0:禁用)
                         sort: x.sort,           //排序
                         parent_id: x.parent_id, //父ID
-                        menu_url: x.menu_url.unwrap_or_default(), //路由路径
-                        api_url: x.api_url.unwrap_or_default(), //接口URL
-                        menu_icon: x.menu_icon.unwrap_or_default(), //菜单图标
+                        menu_url: x.menu_url,   //路由路径
+                        api_url: x.api_url,     //接口URL
+                        menu_icon: x.menu_icon, //菜单图标
                         remark: x.remark.unwrap_or_default(), //备注
                         create_time: x.create_time.to_string(), //创建时间
                         update_time: x.update_time.to_string(), //修改时间

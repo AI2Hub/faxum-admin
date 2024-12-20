@@ -10,11 +10,11 @@ diesel::table! {
         sort -> Integer,
         parent_id -> Bigint,
         #[max_length = 255]
-        menu_url -> Nullable<Varchar>,
+        menu_url -> Varchar,
         #[max_length = 255]
-        api_url -> Nullable<Varchar>,
+        api_url -> Varchar,
         #[max_length = 255]
-        menu_icon -> Nullable<Varchar>,
+        menu_icon -> Varchar,
         #[max_length = 255]
         remark -> Nullable<Varchar>,
         create_time -> Datetime,
@@ -53,7 +53,7 @@ diesel::table! {
         #[max_length = 50]
         user_name -> Varchar,
         #[max_length = 64]
-        password -> Nullable<Varchar>,
+        password -> Varchar,
         status_id -> Tinyint,
         sort -> Integer,
         #[max_length = 255]

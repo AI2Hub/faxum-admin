@@ -127,8 +127,7 @@ pub async fn update_sys_user(Json(req): Json<UpdateUserReq>) -> impl IntoRespons
                         mobile: req.mobile,
                         user_name: req.user_name,
                         remark: req.remark,
-                        create_time: Default::default(),
-                        password: s_user.password.clone(),
+                        create_time: s_user.create_time,
                         update_time: Default::default(),
                     };
 
@@ -291,7 +290,7 @@ pub async fn login(Json(req): Json<UserLoginReq>) -> impl IntoResponse {
             if let Ok(user) = query.first::<SysUser>(conn) {
                 info!("select_by_mobile: {:?}", user);
 
-                if user.password.unwrap_or_default().ne(&req.password) {
+                if user.password.ne(&req.password) {
                     return BaseResponse::<String>::err_result_msg("密码不正确".to_string());
                 }
 
@@ -333,50 +332,49 @@ pub async fn login(Json(req): Json<UserLoginReq>) -> impl IntoResponse {
  *date：2024/12/19 14:21:03
  */
 fn query_btn_menu(u_id: i64) -> Vec<String> {
-    Vec::new()
-    // match &mut RB.clone().get() {
-    //     Ok(conn) => {
-    //         let user_role_sql =
-    //             sql_query("SELECT * FROM sys_user_role where user_id = ? and role_id = 1");
-    //         match user_role_sql
-    //             .bind::<Bigint, _>(&u_id)
-    //             .get_result::<SysUserRole>(conn)
-    //         {
-    //             Ok(_) => {
-    //                 let sys_menu_result = sys_menu.select(api_url).load::<String>(conn);
-    //                 sys_menu_result.unwrap_or_else(|_| Vec::new())
-    //             }
-    //             Err(_) => {
-    //                 let result = sql_query(
-    //                     "select u.api_url from sys_user_role t \
-    //                left join sys_role usr on t.role_id = usr.id \
-    //                left join sys_role_menu srm on usr.id = srm.role_id \
-    //                left join sys_menu u on srm.menu_id = u.id \
-    //                where t.user_id = ?",
-    //                 )
-    //                     .bind::<Bigint, _>(&u_id)
-    //                     .load::<StringColumn>(conn);
-    //
-    //                 match result {
-    //                     Ok(btn_list) => {
-    //                         let mut btn_list_data: Vec<String> = Vec::new();
-    //                         for x in btn_list {
-    //                             if x.api_url.unwrap_or_default().len() != 0 {
-    //                                 btn_list_data.push(x.api_url.unwrap_or_default());
-    //                             }
-    //                         }
-    //                         btn_list_data
-    //                     }
-    //                     Err(_) => Vec::new(),
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     Err(err) => {
-    //         error!("err:{}", err.to_string());
-    //         Vec::new()
-    //     }
-    // }
+    match &mut RB.clone().get() {
+        Ok(conn) => {
+            let user_role_sql =
+                sql_query("SELECT * FROM sys_user_role where user_id = ? and role_id = 1");
+            match user_role_sql
+                .bind::<Bigint, _>(&u_id)
+                .get_result::<SysUserRole>(conn)
+            {
+                Ok(_) => {
+                    let sys_menu_result = sys_menu.select(api_url).load::<String>(conn);
+                    sys_menu_result.unwrap_or_else(|_| Vec::new())
+                }
+                Err(_) => {
+                    let result = sql_query(
+                        "select u.api_url from sys_user_role t \
+                    left join sys_role usr on t.role_id = usr.id \
+                    left join sys_role_menu srm on usr.id = srm.role_id \
+                    left join sys_menu u on srm.menu_id = u.id \
+                    where t.user_id = ?",
+                    )
+                    .bind::<Bigint, _>(&u_id)
+                    .load::<StringColumn>(conn);
+
+                    match result {
+                        Ok(btn_list) => {
+                            let mut btn_list_data: Vec<String> = Vec::new();
+                            for x in btn_list {
+                                if x.api_url.clone().len() != 0 {
+                                    btn_list_data.push(x.api_url);
+                                }
+                            }
+                            btn_list_data
+                        }
+                        Err(_) => Vec::new(),
+                    }
+                }
+            }
+        }
+        Err(err) => {
+            error!("err:{}", err.to_string());
+            Vec::new()
+        }
+    }
 }
 
 /*
@@ -554,8 +552,8 @@ pub async fn query_user_menu(headers: HeaderMap) -> Result<impl IntoResponse, im
                             sys_menu_ids.insert(x.id.clone());
                         }
 
-                        if x.api_url.clone().unwrap_or_default().len() != 0 {
-                            btn_menu.push(x.api_url.unwrap_or_default());
+                        if x.api_url.clone().len() != 0 {
+                            btn_menu.push(x.api_url);
                         }
                     }
 
@@ -576,14 +574,14 @@ pub async fn query_user_menu(headers: HeaderMap) -> Result<impl IntoResponse, im
                                     id: x.id,
                                     parent_id: x.parent_id,
                                     name: x.menu_name,
-                                    icon: x.menu_icon.unwrap_or_default(),
-                                    api_url: x.api_url.clone().unwrap_or_default(),
+                                    icon: x.menu_icon,
+                                    api_url: x.api_url.clone(),
                                     menu_type: x.menu_type,
-                                    path: x.menu_url.unwrap_or_default(),
+                                    path: x.menu_url,
                                 });
 
-                                if x.api_url.clone().unwrap_or_default().len() != 0 {
-                                    btn_menu.push(x.api_url.unwrap_or_default());
+                                if x.api_url.clone().len() != 0 {
+                                    btn_menu.push(x.api_url);
                                 }
                             }
                         }
@@ -635,7 +633,7 @@ pub async fn update_user_password(Json(item): Json<UpdateUserPwdReq>) -> impl In
                 .get_result::<SysUser>(conn)
             {
                 Ok(user) => {
-                    if user.password != Option::from(item.pwd) {
+                    if user.password != item.pwd {
                         error!("err:{}", "旧密码不正确".to_string());
                         return BaseResponse::<String>::err_result_msg("旧密码不正确".to_string());
                     }
