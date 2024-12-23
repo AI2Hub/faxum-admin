@@ -26,13 +26,13 @@ pub async fn add_sys_menu(
         id: NotSet,                     //主键
         menu_name: Set(item.menu_name), //菜单名称
         menu_type: Set(item.menu_type), //菜单类型(1：目录   2：菜单   3：按钮)
-        status_id: Set(item.status_id), //状态(1:正常，0:禁用)
+        status: Set(item.status), //状态(1:正常，0:禁用)
         sort: Set(item.sort),           //排序
         parent_id: Set(item.parent_id), //父ID
-        menu_url: Set(item.menu_url),   //路由路径
-        api_url: Set(item.api_url),     //接口URL
-        menu_icon: Set(item.menu_icon), //菜单图标
-        remark: Set(item.remark),       //备注
+        menu_url: Set(item.menu_url.unwrap_or_default()),   //路由路径
+        api_url: Set(item.api_url.unwrap_or_default()),     //接口URL
+        menu_icon: Set(item.menu_icon.unwrap_or_default()), //菜单图标
+        remark: Set(item.remark.unwrap_or_default()),       //备注
         create_time: NotSet,            //创建时间
         update_time: NotSet,            //修改时间
     };
@@ -108,13 +108,13 @@ pub async fn update_sys_menu(
         id: Set(item.id),               //主键
         menu_name: Set(item.menu_name), //菜单名称
         menu_type: Set(item.menu_type), //菜单类型(1：目录   2：菜单   3：按钮)
-        status_id: Set(item.status_id), //状态(1:正常，0:禁用)
+        status: Set(item.status), //状态(1:正常，0:禁用)
         sort: Set(item.sort),           //排序
         parent_id: Set(item.parent_id), //父ID
-        menu_url: Set(item.menu_url),   //路由路径
-        api_url: Set(item.api_url),     //接口URL
-        menu_icon: Set(item.menu_icon), //菜单图标
-        remark: Set(item.remark),       //备注
+        menu_url: Set(item.menu_url.unwrap_or_default()),   //路由路径
+        api_url: Set(item.api_url.unwrap_or_default()),     //接口URL
+        menu_icon: Set(item.menu_icon.unwrap_or_default()), //菜单图标
+        remark: Set(item.remark.unwrap_or_default()),       //备注
         create_time: NotSet,            //创建时间
         update_time: NotSet,            //修改时间
     };
@@ -139,7 +139,7 @@ pub async fn update_sys_menu_status(
     let conn = &state.conn;
 
     let result = SysMenu::update_many()
-        .col_expr(sys_menu::Column::StatusId, Expr::value(item.status))
+        .col_expr(sys_menu::Column::Status, Expr::value(item.status))
         .filter(sys_menu::Column::Id.is_in(item.ids))
         .exec(conn)
         .await;
@@ -171,13 +171,13 @@ pub async fn query_sys_menu_detail(
                 id: x.id,                                   //主键
                 menu_name: x.menu_name,                     //菜单名称
                 menu_type: x.menu_type,                     //菜单类型(1：目录   2：菜单   3：按钮)
-                status_id: x.status_id,                     //状态(1:正常，0:禁用)
+                status: x.status,                     //状态(1:正常，0:禁用)
                 sort: x.sort,                               //排序
                 parent_id: x.parent_id,                     //父ID
-                menu_url: x.menu_url.unwrap_or_default(),   //路由路径
-                api_url: x.api_url.unwrap_or_default(),     //接口URL
-                menu_icon: x.menu_icon.unwrap_or_default(), //菜单图标
-                remark: x.remark.unwrap_or_default(),       //备注
+                menu_url: x.menu_url,   //路由路径
+                api_url: x.api_url,     //接口URL
+                menu_icon: x.menu_icon, //菜单图标
+                remark: x.remark,       //备注
                 create_time: x.create_time.to_string(),     //创建时间
                 update_time: x.update_time.to_string(),     //修改时间
             };
@@ -215,13 +215,13 @@ pub async fn query_sys_menu_list(
             id: x.id,                                   //主键
             menu_name: x.menu_name,                     //菜单名称
             menu_type: x.menu_type,                     //菜单类型(1：目录   2：菜单   3：按钮)
-            status_id: x.status_id,                     //状态(1:正常，0:禁用)
+            status: x.status,                     //状态(1:正常，0:禁用)
             sort: x.sort,                               //排序
             parent_id: x.parent_id,                     //父ID
-            menu_url: x.menu_url.unwrap_or_default(),   //路由路径
-            api_url: x.api_url.unwrap_or_default(),     //接口URL
-            menu_icon: x.menu_icon.unwrap_or_default(), //菜单图标
-            remark: x.remark.unwrap_or_default(),       //备注
+            menu_url: x.menu_url,   //路由路径
+            api_url: x.api_url,     //接口URL
+            menu_icon: x.menu_icon, //菜单图标
+            remark: x.remark,       //备注
             create_time: x.create_time.to_string(),     //创建时间
             update_time: x.update_time.to_string(),     //修改时间
         })

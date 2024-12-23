@@ -11,7 +11,7 @@ pub struct Model {
     #[sea_orm(unique)]
     pub mobile: String,
     pub user_name: String,
-    pub password: Option<String>,
+    pub password: String,
     pub status_id: i8,
     pub sort: i32,
     pub remark: Option<String>,

@@ -4,7 +4,7 @@
 
 # 生成entity
 
-sea-orm-cli generate entity -o src/model --with-serde both
+sea-orm-cli generate entity -o src/model/system --with-serde both
 
 # 前端项目
 

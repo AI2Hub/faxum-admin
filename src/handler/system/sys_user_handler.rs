@@ -32,7 +32,7 @@ pub async fn add_sys_user(
         id: NotSet,                     //主键
         mobile: Set(item.mobile),       //手机
         user_name: Set(item.user_name), //姓名
-        password: Set(item.password),   //密码
+        password: Set(item.password.unwrap_or_default()),   //密码
         status_id: Set(item.status_id), //状态(1:正常，0:禁用)
         sort: Set(item.sort),           //排序
         remark: Set(item.remark),       //备注
@@ -155,9 +155,9 @@ pub async fn update_user_password(
     };
 
     let user = result.unwrap();
-    if user.clone().password.unwrap_or_default() == user_pwd.pwd {
+    if user.clone().password == user_pwd.pwd {
         let mut s_user: sys_user::ActiveModel = user.into();
-        s_user.password = Set(Some(user_pwd.re_pwd));
+        s_user.password = Set(user_pwd.re_pwd);
 
         let result = s_user.update(conn).await;
         match result {
@@ -244,7 +244,7 @@ pub async fn query_sys_user_list(
             id: x.id,                                 //主键
             mobile: x.mobile,                         //手机
             user_name: x.user_name,                   //姓名
-            password: x.password.unwrap_or_default(), //密码
+            password: x.password, //密码
             status_id: x.status_id,                   //状态(1:正常，0:禁用)
             sort: x.sort,                             //排序
             remark: x.remark.unwrap_or_default(),     //备注
@@ -282,7 +282,7 @@ pub async fn login(state: State<AppState>, Json(item): Json<UserLoginReq>) -> im
     let username = user.user_name;
     let password = user.password;
 
-    if password.unwrap_or_default().ne(&item.password) {
+    if password.ne(&item.password) {
         return BaseResponse::<String>::err_result_msg("密码不正确!".to_string());
     }
 
@@ -324,7 +324,7 @@ async fn query_btn_menu(conn: &DatabaseConnection, id: i64) -> Vec<String> {
         != 0
     {
         for x in SysMenu::find().all(conn).await.unwrap_or_default() {
-            btn_menu.push(x.api_url.unwrap_or_default());
+            btn_menu.push(x.api_url);
         }
         log::info!("admin login: {:?}", id);
     } else {
@@ -515,8 +515,8 @@ pub async fn query_user_menu(
             sys_menu_ids.insert(x.id);
             sys_menu_ids.insert(x.parent_id);
         }
-        if x.api_url.clone().unwrap_or_default().len() > 0 {
-            btn_menu.insert(x.api_url.unwrap_or_default());
+        if x.api_url.clone().len() > 0 {
+            btn_menu.insert(x.api_url);
         }
     }
 
@@ -527,7 +527,7 @@ pub async fn query_user_menu(
     let mut sys_menu: HashSet<MenuList> = HashSet::new();
     for y in SysMenu::find()
         .filter(sys_menu::Column::Id.is_in(menu_ids))
-        .filter(sys_menu::Column::StatusId.eq(1))
+        .filter(sys_menu::Column::Status.eq(1))
         .order_by_asc(sys_menu::Column::Sort)
         .all(conn)
         .await
@@ -537,13 +537,13 @@ pub async fn query_user_menu(
             id: y.id,
             parent_id: y.parent_id,
             name: y.menu_name,
-            icon: y.menu_icon.unwrap_or_default(),
-            api_url: y.api_url.clone().unwrap_or_default(),
+            icon: y.menu_icon,
+            api_url: y.api_url.clone(),
             menu_type: y.menu_type,
-            path: y.menu_url.unwrap_or_default(),
+            path: y.menu_url,
         });
-        if y.api_url.clone().unwrap_or_default().len() > 0 {
-            btn_menu.insert(y.api_url.unwrap_or_default());
+        if y.api_url.clone().len() > 0 {
+            btn_menu.insert(y.api_url);
         }
     }
 
