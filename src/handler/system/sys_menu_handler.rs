@@ -24,7 +24,7 @@ pub async fn add_sys_menu(Json(req): Json<AddMenuReq>) -> impl IntoResponse {
     let add_sys_menu_param = AddSysMenu {
         menu_name: req.menu_name,        //菜单名称
         menu_type: req.menu_type,        //菜单类型(1：目录   2：菜单   3：按钮)
-        status_id: req.status_id,        //状态(1:正常，0:禁用)
+        status: req.status,              //状态(1:正常，0:禁用)
         sort: req.sort,                  //排序
         parent_id: req.parent_id,        //父ID
         menu_url: req.menu_url,          //路由路径
@@ -104,7 +104,7 @@ pub async fn update_sys_menu(Json(req): Json<UpdateMenuReq>) -> impl IntoRespons
         id: req.id,                      //主键
         menu_name: req.menu_name,        //菜单名称
         menu_type: req.menu_type,        //菜单类型(1：目录   2：菜单   3：按钮)
-        status_id: req.status_id,        //状态(1:正常，0:禁用)
+        status: req.status,              //状态(1:正常，0:禁用)
         sort: req.sort,                  //排序
         parent_id: req.parent_id,        //父ID
         menu_url: req.menu_url,          //路由路径
@@ -145,7 +145,7 @@ pub async fn update_sys_menu_status(Json(req): Json<UpdateMenuStatusReq>) -> imp
         Ok(conn) => {
             let result = diesel::update(sys_menu)
                 .filter(id.eq_any(&req.ids))
-                .set(status_id.eq(req.status))
+                .set(status.eq(req.status))
                 .execute(conn);
             match result {
                 Ok(_u) => BaseResponse::<String>::ok_result(),
@@ -181,7 +181,7 @@ pub async fn query_sys_menu_detail(
                         id: x.id,                               //主键
                         menu_name: x.menu_name,                 //菜单名称
                         menu_type: x.menu_type, //菜单类型(1：目录   2：菜单   3：按钮)
-                        status_id: x.status_id, //状态(1:正常，0:禁用)
+                        status: x.status,       //状态(1:正常，0:禁用)
                         sort: x.sort,           //排序
                         parent_id: x.parent_id, //父ID
                         menu_url: x.menu_url,   //路由路径
@@ -214,7 +214,7 @@ pub async fn query_sys_menu_list(Json(req): Json<QueryMenuListReq>) -> impl Into
     let query = sys_menu::table().into_boxed();
 
     //if let Some(i) = &req.status {
-    //    query = query.filter(status_id.eq(i));
+    //    query = query.filter(status.eq(i));
     //}
 
     debug!(
@@ -233,7 +233,7 @@ pub async fn query_sys_menu_list(Json(req): Json<QueryMenuListReq>) -> impl Into
                         id: x.id,                               //主键
                         menu_name: x.menu_name,                 //菜单名称
                         menu_type: x.menu_type, //菜单类型(1：目录   2：菜单   3：按钮)
-                        status_id: x.status_id, //状态(1:正常，0:禁用)
+                        status: x.status,       //状态(1:正常，0:禁用)
                         sort: x.sort,           //排序
                         parent_id: x.parent_id, //父ID
                         menu_url: x.menu_url,   //路由路径

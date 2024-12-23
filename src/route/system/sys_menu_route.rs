@@ -9,19 +9,25 @@ use axum::Router;
  */
 pub fn build_sys_menu_route() -> Router {
     Router::new()
-        .route("/add_menu", post(sys_menu_handler::add_sys_menu))
-        .route("/delete_menu", post(sys_menu_handler::delete_sys_menu))
-        .route("/update_menu", post(sys_menu_handler::update_sys_menu))
+        .route("/system/menu/addMenu", post(sys_menu_handler::add_sys_menu))
         .route(
-            "/update_menu_status",
+            "/system/menu/deleteMenu",
+            post(sys_menu_handler::delete_sys_menu),
+        )
+        .route(
+            "/system/menu/updateMenu",
+            post(sys_menu_handler::update_sys_menu),
+        )
+        .route(
+            "/system/menu/updateMenuStatus",
             post(sys_menu_handler::update_sys_menu_status),
         )
         .route(
-            "/query_menu_detail",
+            "/system/menu/queryMenuDetail",
             post(sys_menu_handler::query_sys_menu_detail),
         )
         .route(
-            "/query_menu_list",
+            "/system/menu/queryMenuList",
             post(sys_menu_handler::query_sys_menu_list),
         )
     //记得在main.rs中添加路由build_sys_menu_route()
