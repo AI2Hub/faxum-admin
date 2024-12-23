@@ -29,15 +29,15 @@ pub async fn add_sys_user(
     let conn = &state.conn;
 
     let sys_user = sys_user::ActiveModel {
-        id: NotSet,                     //主键
-        mobile: Set(item.mobile),       //手机
-        user_name: Set(item.user_name), //姓名
-        password: Set(item.password.unwrap_or_default()),   //密码
-        status_id: Set(item.status_id), //状态(1:正常，0:禁用)
-        sort: Set(item.sort),           //排序
-        remark: Set(item.remark),       //备注
-        create_time: NotSet,            //创建时间
-        update_time: NotSet,            //修改时间
+        id: NotSet,                                       //主键
+        mobile: Set(item.mobile),                         //手机
+        user_name: Set(item.user_name),                   //姓名
+        password: Set(item.password.unwrap_or_default()), //密码
+        status_id: Set(item.status_id),                   //状态(1:正常，0:禁用)
+        sort: Set(item.sort),                             //排序
+        remark: Set(item.remark),                         //备注
+        create_time: NotSet,                              //创建时间
+        update_time: NotSet,                              //修改时间
     };
 
     let result = SysUser::insert(sys_user).exec(conn).await;
@@ -241,15 +241,15 @@ pub async fn query_sys_user_list(
         .unwrap_or_default()
     {
         sys_user_list_data.push(UserListDataResp {
-            id: x.id,                                 //主键
-            mobile: x.mobile,                         //手机
-            user_name: x.user_name,                   //姓名
-            password: x.password, //密码
-            status_id: x.status_id,                   //状态(1:正常，0:禁用)
-            sort: x.sort,                             //排序
-            remark: x.remark.unwrap_or_default(),     //备注
-            create_time: x.create_time.to_string(),   //创建时间
-            update_time: x.update_time.to_string(),   //修改时间
+            id: x.id,                               //主键
+            mobile: x.mobile,                       //手机
+            user_name: x.user_name,                 //姓名
+            password: x.password,                   //密码
+            status_id: x.status_id,                 //状态(1:正常，0:禁用)
+            sort: x.sort,                           //排序
+            remark: x.remark.unwrap_or_default(),   //备注
+            create_time: x.create_time.to_string(), //创建时间
+            update_time: x.update_time.to_string(), //修改时间
         })
     }
 

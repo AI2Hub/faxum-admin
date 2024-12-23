@@ -23,18 +23,18 @@ pub async fn add_sys_menu(
     let conn = &state.conn;
 
     let sys_menu = sys_menu::ActiveModel {
-        id: NotSet,                     //主键
-        menu_name: Set(item.menu_name), //菜单名称
-        menu_type: Set(item.menu_type), //菜单类型(1：目录   2：菜单   3：按钮)
-        status: Set(item.status), //状态(1:正常，0:禁用)
-        sort: Set(item.sort),           //排序
-        parent_id: Set(item.parent_id), //父ID
+        id: NotSet,                                         //主键
+        menu_name: Set(item.menu_name),                     //菜单名称
+        menu_type: Set(item.menu_type),                     //菜单类型(1：目录   2：菜单   3：按钮)
+        status: Set(item.status),                           //状态(1:正常，0:禁用)
+        sort: Set(item.sort),                               //排序
+        parent_id: Set(item.parent_id),                     //父ID
         menu_url: Set(item.menu_url.unwrap_or_default()),   //路由路径
         api_url: Set(item.api_url.unwrap_or_default()),     //接口URL
         menu_icon: Set(item.menu_icon.unwrap_or_default()), //菜单图标
         remark: Set(item.remark.unwrap_or_default()),       //备注
-        create_time: NotSet,            //创建时间
-        update_time: NotSet,            //修改时间
+        create_time: NotSet,                                //创建时间
+        update_time: NotSet,                                //修改时间
     };
 
     let result = SysMenu::insert(sys_menu).exec(conn).await;
@@ -105,18 +105,18 @@ pub async fn update_sys_menu(
     }
 
     let sys_menu = sys_menu::ActiveModel {
-        id: Set(item.id),               //主键
-        menu_name: Set(item.menu_name), //菜单名称
-        menu_type: Set(item.menu_type), //菜单类型(1：目录   2：菜单   3：按钮)
-        status: Set(item.status), //状态(1:正常，0:禁用)
-        sort: Set(item.sort),           //排序
-        parent_id: Set(item.parent_id), //父ID
+        id: Set(item.id),                                   //主键
+        menu_name: Set(item.menu_name),                     //菜单名称
+        menu_type: Set(item.menu_type),                     //菜单类型(1：目录   2：菜单   3：按钮)
+        status: Set(item.status),                           //状态(1:正常，0:禁用)
+        sort: Set(item.sort),                               //排序
+        parent_id: Set(item.parent_id),                     //父ID
         menu_url: Set(item.menu_url.unwrap_or_default()),   //路由路径
         api_url: Set(item.api_url.unwrap_or_default()),     //接口URL
         menu_icon: Set(item.menu_icon.unwrap_or_default()), //菜单图标
         remark: Set(item.remark.unwrap_or_default()),       //备注
-        create_time: NotSet,            //创建时间
-        update_time: NotSet,            //修改时间
+        create_time: NotSet,                                //创建时间
+        update_time: NotSet,                                //修改时间
     };
 
     let result = SysMenu::update(sys_menu).exec(conn).await;
@@ -168,18 +168,18 @@ pub async fn query_sys_menu_detail(
             let x = d.unwrap();
 
             let sys_menu = QueryMenuDetailResp {
-                id: x.id,                                   //主键
-                menu_name: x.menu_name,                     //菜单名称
-                menu_type: x.menu_type,                     //菜单类型(1：目录   2：菜单   3：按钮)
-                status: x.status,                     //状态(1:正常，0:禁用)
-                sort: x.sort,                               //排序
-                parent_id: x.parent_id,                     //父ID
-                menu_url: x.menu_url,   //路由路径
-                api_url: x.api_url,     //接口URL
-                menu_icon: x.menu_icon, //菜单图标
-                remark: x.remark,       //备注
-                create_time: x.create_time.to_string(),     //创建时间
-                update_time: x.update_time.to_string(),     //修改时间
+                id: x.id,                               //主键
+                menu_name: x.menu_name,                 //菜单名称
+                menu_type: x.menu_type,                 //菜单类型(1：目录   2：菜单   3：按钮)
+                status: x.status,                       //状态(1:正常，0:禁用)
+                sort: x.sort,                           //排序
+                parent_id: x.parent_id,                 //父ID
+                menu_url: x.menu_url,                   //路由路径
+                api_url: x.api_url,                     //接口URL
+                menu_icon: x.menu_icon,                 //菜单图标
+                remark: x.remark,                       //备注
+                create_time: x.create_time.to_string(), //创建时间
+                update_time: x.update_time.to_string(), //修改时间
             };
 
             BaseResponse::<QueryMenuDetailResp>::ok_result_data(sys_menu)
@@ -212,18 +212,18 @@ pub async fn query_sys_menu_list(
         .unwrap_or_default()
     {
         sys_menu_list_data.push(MenuListDataResp {
-            id: x.id,                                   //主键
-            menu_name: x.menu_name,                     //菜单名称
-            menu_type: x.menu_type,                     //菜单类型(1：目录   2：菜单   3：按钮)
-            status: x.status,                     //状态(1:正常，0:禁用)
-            sort: x.sort,                               //排序
-            parent_id: x.parent_id,                     //父ID
-            menu_url: x.menu_url,   //路由路径
-            api_url: x.api_url,     //接口URL
-            menu_icon: x.menu_icon, //菜单图标
-            remark: x.remark,       //备注
-            create_time: x.create_time.to_string(),     //创建时间
-            update_time: x.update_time.to_string(),     //修改时间
+            id: x.id,                               //主键
+            menu_name: x.menu_name,                 //菜单名称
+            menu_type: x.menu_type,                 //菜单类型(1：目录   2：菜单   3：按钮)
+            status: x.status,                       //状态(1:正常，0:禁用)
+            sort: x.sort,                           //排序
+            parent_id: x.parent_id,                 //父ID
+            menu_url: x.menu_url,                   //路由路径
+            api_url: x.api_url,                     //接口URL
+            menu_icon: x.menu_icon,                 //菜单图标
+            remark: x.remark,                       //备注
+            create_time: x.create_time.to_string(), //创建时间
+            update_time: x.update_time.to_string(), //修改时间
         })
     }
 
